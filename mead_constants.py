@@ -1,3 +1,5 @@
+# Try https://docs.scipy.org/doc/scipy/reference/constants.html
+
 # Physical constants
 h = 6.62607004e-34 # Planck constant [kg m^2 s^-1]
 c = 2.998e8 # Speed of light [m s^-1]

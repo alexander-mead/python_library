@@ -2,8 +2,6 @@ import numpy as np
 
 import treecorr
 
-import mead_general as mead
-
 Map_threads = 4
 
 def calculateXi_sim(nn, Vsim, N1, N2=None):

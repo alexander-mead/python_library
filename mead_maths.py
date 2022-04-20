@@ -38,7 +38,7 @@ def is_even(num):
 
 def is_odd(num):
     '''
-    True if integer is odd
+    Returns true if integer is odd
     '''
     return not is_even(num)
 

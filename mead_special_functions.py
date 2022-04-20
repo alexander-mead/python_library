@@ -1,7 +1,7 @@
 import numpy as np
 
 # Parameters
-xmin_Tk = 1e-5
+xmin_Tk = 1e-5 # Below this value a Taylor expansion is used
 
 def Tophat_k(x):
     '''

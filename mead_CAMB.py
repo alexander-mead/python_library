@@ -1,10 +1,7 @@
-# Standard
-import numpy
-
-# Third-party
+# Third-party imports
 import camb
 
-# My imports
+# Mead imports
 import mead_cosmology as cosmo
 
 # Create my cosmological parameters from a CAMB set

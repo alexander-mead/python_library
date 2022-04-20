@@ -12,7 +12,7 @@ import matplotlib.ticker as ticker
 import requests
 import seaborn as sns
 
-# My imports
+# Mead imports
 import mead_general as mead
 import mead_pandas as mpd
 

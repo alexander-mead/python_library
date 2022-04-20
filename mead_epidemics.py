@@ -1,7 +1,6 @@
 # Standard
 import numpy as np
 
-# Set of right-hand-side equations
 def _SIR_equations(t, y, R0, G0, f, m):
     '''
     Right-hand side of the SIR equations
@@ -44,7 +43,6 @@ def _SIR_equations(t, y, R0, G0, f, m):
     # Return a list
     return dS.tolist()+dI.tolist()+dR.tolist()
 
-# Set of right-hand-side equations
 def _basic_SIR_equations(t, y, R0, G0=0., Vt=(lambda t, R: 0.)):
     '''
     Right-hand side of the SIR equations

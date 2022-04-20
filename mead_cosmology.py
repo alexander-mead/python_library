@@ -5,7 +5,7 @@ from scipy.integrate import odeint
 import scipy.integrate as integrate
 from scipy.interpolate import interp1d
 
-# My imports
+# Mead imports
 import mead_constants as const
 import mead_general as mead
 import mead_interpolate as interpolate

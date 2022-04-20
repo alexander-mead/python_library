@@ -1,7 +1,5 @@
 ### Functions ###
 
-# First set involve only basic Python, then numpy, then matplotlib
-
 ### High level ###
 
 def module_info(mod):
