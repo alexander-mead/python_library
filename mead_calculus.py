@@ -2,7 +2,8 @@ def derivative(f, x, dx=1e-3):
     '''
     Calculate the numerical derivative of f(x) at the point x: df/dx
     '''
-    df = f(x+dx/2.)-f(x-dx/2.) # Two-sided difference in numerator
+    hdx = dx/2.
+    df = f(x+hdx)-f(x-hdx) # Two-sided difference in numerator
     return df/dx
 
 def log_derivative(f, x, dx=1e-3):
@@ -10,8 +11,9 @@ def log_derivative(f, x, dx=1e-3):
     Calculate the logarithmic derivative of f(x) at the point x: dln(f)/dln(x)
     '''
     from numpy import log
-    dlnf = log(f(x+dx/2.)/f(x-dx/2.)) # Two-sided difference in numerator
-    dlnx = log((x+dx/2.)/(x-dx/2.)) # Two-sided (is this necessary?)
+    hdx = dx/2.
+    dlnf = log(f(x+hdx)/f(x-hdx)) # Two-sided difference in numerator
+    dlnx = log((x+hdx)/(x-hdx)) # Two-sided (is this necessary?)
     #dlnx = log(1.+dx/x) # Using this is probably fine; for dx<<x they are equal
     return dlnf/dlnx
 
