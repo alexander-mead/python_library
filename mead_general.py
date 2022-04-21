@@ -152,14 +152,14 @@ def second_largest(numbers):
                 m2 = x
     return m2 if count >= 2 else None
 
-def arange(min, max, dtype=None, *, like=None):
+def arange(min, max, dtype=None):
     '''
     Sensible arange function for producing integers from min to max inclusive
     I hate the inbuilt numpy one with such fury that it frightens me
     TODO: Include step properly, what is this ([start,] stop[, step], ...) square-bracket thing?
     '''
     from numpy import arange
-    return arange(min, max+1, dtype=dtype, like=like)
+    return arange(min, max+1, dtype=dtype)#, like=like)
 
 ### ###
 
