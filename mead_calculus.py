@@ -19,6 +19,21 @@ def log_derivative(f, x, dx=1e-3):
     #dlnx = log(1.+dx/x) # Using this is probably fine; for dx<<x they are equal
     return dlnf/dlnx
 
+def gradient(f, x, dx=1e-3):
+    '''
+    Calculates the gradient of scalar function f(x) defined for vector x
+    Returns a vector of the gradients of f(x) at the point x
+    TODO: dx could also be a vector
+    TODO: Loop is probably very slow here
+    '''
+    from numpy import empty, zeros
+    df = empty(len(x))
+    for i, _ in enumerate(x):
+        hdx = zeros(len(x))
+        hdx[i] = dx/2.
+        df[i] = (f(x+hdx)-f(x-hdx))/dx
+    return df
+
 def integrate_quad_log(func,a,b,\
                        args=(),\
                        full_output=0,\
