@@ -165,6 +165,13 @@ def arange(min, max, dtype=None):
 
 ### This set of functions use numpy ###
 
+def unit(x):
+    '''
+    Create a unit vector from a non-unit vector
+    '''
+    from numpy.linalg import norm
+    return x/norm(x)
+
 def linspace_step(start, stop, step):
     '''
     Create a linear-spaced array going from start->stop (inclusive) via step
@@ -316,6 +323,7 @@ def covariance_matrix(sigmas, R):
     @params
         sigmas - sigmas for the diagonal
         R - correlation matrix (nxn)
+    TODO: Could save memory by having the sigmas run the diagonal of the correlation matrix
     '''
     from numpy import diag, matmul
     S = diag(sigmas)
