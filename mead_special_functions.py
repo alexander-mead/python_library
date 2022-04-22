@@ -52,6 +52,7 @@ def Poisson_distribution(n, mu):
 def KroneckerDelta(x1, x2):
     '''
     Kronecker delta function
+    TODO: What about np.linalg.kron?
     '''
     return np.where(x1==x2, 1, 0)
 
