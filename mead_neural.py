@@ -24,11 +24,19 @@ def ELU(x, alpha=1.): # Exponential Linear Unit
 ### Optimization ###
 
 def GradientDescent(grad, x, alpha=1e-3, **kwargs):
+    #from mead_general import unit
     xn = x-alpha*grad(x, **kwargs) # Standard gradient descent
     return xn
 
 def GradientMomentumDescent(grad, x, v, alpha=1e-3, rho=0.99, **kwargs):
-    vn = rho*v-alpha*grad(x, **kwargs) # Momentum term, rho is like friction
+    vn = -rho*v-alpha*grad(x, **kwargs) # Momentum term, rho is like friction
+    xn = x+vn
+    return xn, vn
+
+def ViscousDescent(grad, x, v, alpha=1e-3, rho=0.99, **kwargs):
+    #from numpy import sqrt, dot
+    from numpy.linalg import norm
+    vn = -rho*norm(v)*v-alpha*grad(x, **kwargs)
     xn = x+vn
     return xn, vn
 
