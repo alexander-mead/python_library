@@ -290,6 +290,7 @@ def halo_multiplicity_function(hmod, Ms, sigmas=None, sigma=None, Pk_lin=None):
     Calculates M^2 n(M) / rhobar, the so-called halo multiplicity function
     Note that this is dimensionless
     TODO: Add calculation of dnu_dlnm for sigmas
+    TODO: Use scipy.misc.derivative instead of mead derivative
     '''
     from mead_calculus import log_derivative
     nus = _get_nus(Ms, hmod.dc, hmod.Om_m, sigmas, sigma, Pk_lin)

@@ -1,6 +1,7 @@
 def derivative(f, x, dx=1e-3):
     '''
     Calculate the numerical derivative of f(x) at the point x: df/dx
+    NOTE: scipy.misc.derivative
     '''
     hdx = dx/2.
     df = f(x+hdx)-f(x-hdx) # Two-sided difference in numerator
@@ -9,6 +10,7 @@ def derivative(f, x, dx=1e-3):
 def log_derivative(f, x, dx=1e-3):
     '''
     Calculate the logarithmic derivative of f(x) at the point x: dln(f)/dln(x)
+    NOTE: scipy.misc.derivative
     '''
     from numpy import log
     hdx = dx/2.
