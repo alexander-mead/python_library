@@ -146,16 +146,6 @@ def Gaussian_filter(npix, spix):
             F[ir, ic] = np.exp(-0.5*(ix**2+iy**2)/spix**2)
     return normalize_filter(F)
 
-# def mean_smoothing(X, npix=3, **kwargs):
-#     from scipy.signal import convolve2d
-#     F = normalize_filter(np.ones((npix, npix)))
-#     return convolve2d(X, F, **kwargs)
-
-# def Gaussian_smoothing(X, npix=3, spix=1, **kwargs):
-#     from scipy.signal import convolve2d
-#     F = Gaussian_filter(npix, spix)
-#     return convolve2d(X, F, **kwargs)
-
 def smooth(X, npix=3, spix=1, method='Gaussian', **kwargs):
     from scipy.signal import convolve2d
     if method == 'Gaussian':
