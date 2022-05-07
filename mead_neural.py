@@ -132,13 +132,14 @@ def Adam(grad, x, m1, m2, t, alpha=1e-3, beta1=0.99, beta2=0.99, eps=1e-7, unbia
 
 ### Loss ###
 
-def softmax(x):
+def softmax(x, T):
     '''
     Converts any set of scores x into something that could be interpreted as a probability.
     The vector of scores, x, could initially be positive or negative; ordering is preserved.
+    T is an effective 'temperature', which governs the relative contributions of different x
     '''
     from numpy import exp
-    ex = exp(x)
+    ex = exp(x/T)
     return ex/ex.sum()
 
 ### ###
