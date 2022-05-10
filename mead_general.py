@@ -201,7 +201,7 @@ def is_power_of_n(x, n):
 
 def is_power_of_two(x):
     '''
-    True if arguement is a perfect power of two
+    True if argument is a perfect power of two
     '''
     return is_power_of_n(x, 2)
 
