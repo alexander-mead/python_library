@@ -255,6 +255,13 @@ def remove_nans_from_array(x):
     from numpy import isnan
     return x[~isnan(x)]
 
+def array_contains_nan(array):
+    '''
+    Returns True if the array contains any nan values
+    '''
+    from numpy import isnan, sum
+    return isnan(sum(array))
+
 def array_values_at_indices(array, list_of_array_positions):
     '''
     Returns values of the array at the list of array position integers
