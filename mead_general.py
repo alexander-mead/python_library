@@ -137,6 +137,13 @@ def remove_list_from_list(removal_list, original_list):
         if item in original_list:
             original_list.remove(item)
 
+def remove_multiple_elements_from_list(my_list, indices):
+    '''
+    Remove multiple elements from a list by providing a list of indices
+    '''
+    for index in sorted(indices, reverse=True):
+        del my_list[index]
+
 def second_largest(numbers):
     '''
     Returns the second-largest entry in collection of numbers
