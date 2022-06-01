@@ -132,6 +132,7 @@ def create_unique_list(list_with_duplicates):
 def remove_list_from_list(removal_list, original_list):
     '''
     Remove items in 'removal_list' if they occur in 'original_list'
+    TODO: Does this only remove the first occurance?
     '''
     for item in removal_list:
         if item in original_list:
