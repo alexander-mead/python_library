@@ -122,6 +122,16 @@ def key_from_value(dict, value):
 
 ### These functions operate on collections (lists, tuples, sets, dictionaries) ###
 
+def count_entries_of_nested_list(listOfElem):
+    ''' Get number of elements in a nested list'''
+    count = 0
+    for elem in listOfElem: # Iterate over the list
+        if type(elem) == list: # Check if type of element is list
+            count += count_entries_of_nested_list(elem) # Recursive call
+        else:
+            count += 1
+    return count
+
 def create_unique_list(list_with_duplicates):
     '''
     Takes a list that may contain duplicates and returns a new list with the duplicates removed
