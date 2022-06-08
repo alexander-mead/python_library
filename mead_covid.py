@@ -207,7 +207,62 @@ death_bar_color = 'indianred'
 death_line_color = 'r'
 death_label = r'Deaths $[\times %d]$'%(int(death_fac))
 
-### Canada data ###
+### General ###
+
+def sort_month_axis(plt):
+    '''
+    Get the months axis of a plot looking nice
+    '''
+    locator_monthstart = dates.MonthLocator() # Start of every month
+    locator_monthmid = dates.MonthLocator(bymonthday=15) # Middle of every month
+    fmt = dates.DateFormatter('%b') # Specify the format - %b gives us Jan, Feb...
+    X = plt.gca().xaxis
+    X.set_major_locator(locator_monthstart)
+    X.set_minor_locator(locator_monthmid)
+    X.set_major_formatter(ticker.NullFormatter())
+    X.set_minor_formatter(fmt)
+    plt.tick_params(axis='x', which='minor', bottom=False, labelbottom=True)
+    plt.xlabel(None)
+
+def plot_month_spans(plt, color='black', alpha=0.05):
+    '''
+    Plot the spans between months
+    '''
+    for year in [2020, 2021, 2022, 2023]:
+        for month in [2, 4, 6, 8, 10, 12]:
+            plt.axvspan(dt.date(year, month, 1), 
+                        dt.date(year, month, 1)+relativedelta(months=+1), 
+                        alpha=alpha, 
+                        color=color, 
+                        lw=0., 
+                        )
+
+def plot_lockdown_spans(plt, data, region, color='red', alpha=0.25, label='Lockdown'):
+    '''
+    Plot the spans of lockdown
+    '''
+    for id, dates in enumerate(lockdowns.get(region)):
+        lockdown_start_date = dates[0]
+        if len(dates) == 1:
+            lockdown_end_date = max(data.date)
+        elif len(dates) == 2:
+            lockdown_end_date = dates[1]
+        else:
+            raise TypeError('Lockdown dates should have either one or two entries')
+        if id == 0:
+            llabel = label
+        else:
+            llabel = None
+        plt.axvspan(lockdown_start_date, lockdown_end_date, 
+                    alpha=alpha, 
+                    color=color, 
+                    label=llabel,
+                    lw=0.,
+                   )
+
+### ###
+
+### Canada ###
 
 def read_Canada_data(infile):
     df = pd.read_csv(infile)
@@ -234,15 +289,15 @@ def read_Canada_vaccine_data(infile):
     df['proptotal_fully'] = df['proptotal_fully'].astype(float) # Convert the string column to a float
     return df
 
-def plot_Canada_data(df, df_hosp, death_fac=20, Nmax=None):
+def plot_Canada_data(df, df_hosp, start_date, end_date, death_fac=20, Nmax=None):
 
     # Parameters
     dpi = 200
     bar_width = 1.
     bar_alpha = 1.
     nrow = 1
-    start_date = date(2020, 8, 1)
-    end_date = max(df['date'])+relativedelta(months=3)
+    #start_date = date(2020, 8, 1)
+    #end_date = max(df['date'])+relativedelta(months=3)
     ylabel = 'Cases/hospital occupation each day'
     y2label = 'Deaths per day'
     y2fac = death_fac
@@ -250,6 +305,7 @@ def plot_Canada_data(df, df_hosp, death_fac=20, Nmax=None):
     figx = 10.; figy = 4.
     use_seaborn = True
     province = 'Canada'
+    title_date = min(end_date, max(df['date']))
 
     # Seaborn
     if use_seaborn:
@@ -303,8 +359,7 @@ def plot_Canada_data(df, df_hosp, death_fac=20, Nmax=None):
     ax2.get_yaxis().set_major_formatter(ticker.FuncFormatter(lambda x, _: format(int(x), ',')))
     plt.ylim((0., Nmax))
     plt.xlim((start_date, end_date))
-    date_label = max(df['date'])
-    title = province+'\n%s'%(date_label.strftime("%Y-%m-%d"))
+    title = province+'\n%s'%(title_date.strftime("%Y-%m-%d"))
     plt.title(title, x=titx, y=tity, loc='left', fontsize='small', bbox=dict(facecolor='w', edgecolor='k'))
     plt.legend(loc='upper right')
 
@@ -321,7 +376,7 @@ def plot_Canada_data(df, df_hosp, death_fac=20, Nmax=None):
     # Finalize
     plt.tight_layout()
 
-def plot_Canadian_provinces_data(df, provinces, Nmax=100):
+def plot_Canadian_provinces_data(df, provinces, start_date, end_date, Nmax=100):
 
     # Parameters
     dpi = 200
@@ -329,12 +384,13 @@ def plot_Canadian_provinces_data(df, provinces, Nmax=100):
     bar_alpha = 1.
     nrow = len(provinces)
     pop = population_Canadian_provinces
-    start_date = date(2020, 3, 1)
-    end_date = max(df['date'])+relativedelta(months=2)
+    #start_date = date(2020, 3, 1)
+    #end_date = max(df['date'])+relativedelta(months=2)
     ylabel = 'Total number per day per 100,000 population'
     titx = 0.01
     figx = 18.; figy = 2.
     use_seaborn = True
+    title_date = min(end_date, max(df['date']))
 
     # Seaborn
     if use_seaborn:
@@ -385,8 +441,7 @@ def plot_Canadian_provinces_data(df, provinces, Nmax=100):
         plt.ylim((0., Nmax))
         plt.xlim((start_date, end_date))
         if iplot == 0:
-            date_label = max(df['date'])
-            title = province+'\n%s'%(date_label.strftime("%Y-%m-%d"))
+            title = province+'\n%s'%(title_date.strftime("%Y-%m-%d"))
             tity = 0.70
         else:
             title = province
@@ -419,16 +474,18 @@ def plot_Canadian_provinces_data(df, provinces, Nmax=100):
     # Finalize
     plt.tight_layout()
 
-def plot_Canadian_province_data(df, df_vax=None, df_world_cases=None, df_world_deaths=None, 
-    province='British Columbia', country='United Kingdom', Nmax=5750, fake_hosp=False, fake_hosp_fac=0.01):
+def plot_Canadian_province_data(df, start_date, end_date, 
+    df_vax=None, df_world_cases=None, df_world_deaths=None, 
+    province='British Columbia', country='United Kingdom', 
+    Nmax=5750, fake_hosp=False, fake_hosp_fac=0.01):
 
     # Parameters
     dpi = 200
     bar_width = 1.
     bar_alpha = 1.
     #start_date = date(2020, 3, 1)
-    start_date = date(2020, 8, 1)
-    end_date = max(df['date'])+relativedelta(months=1)
+    #start_date = date(2020, 8, 1)
+    #end_date = max(df['date'])+relativedelta(months=1)
     y1label = 'New cases per day'
     #y2label = 'New deaths/hospitalisations per day'
     y2label = 'New deaths per day'
@@ -446,6 +503,7 @@ def plot_Canadian_province_data(df, df_vax=None, df_world_cases=None, df_world_d
     try_to_plot_country_cases = True
     try_to_plot_country_deaths = True
     alpha_country = 0.15
+    title_date = min(end_date, max(df['date']))
 
     # Extras being plotted
     plot_country_cases = try_to_plot_country_cases and (df_world_cases is not None)
@@ -652,8 +710,7 @@ def plot_Canadian_province_data(df, df_vax=None, df_world_cases=None, df_world_d
     plt.xlabel(None)
     plt.ylim((0., Nmax))
     plt.xlim((start_date, end_date))
-    date_label = max(df['date'])
-    title = province+'\n%s'%(date_label.strftime("%Y-%m-%d"))
+    title = province+'\n%s'%(title_date.strftime("%Y-%m-%d"))
     plt.title(title, x=titx, y=tity, loc='left', fontsize='small', bbox=dict(facecolor='w', edgecolor='k'))
     plt.legend(loc='upper left', framealpha=1.)
 
@@ -680,7 +737,7 @@ def plot_Canadian_province_data(df, df_vax=None, df_world_cases=None, df_world_d
 
 ### ###
 
-### JHU data ###
+### World ###
 
 def read_JHU_data(file):
     '''
@@ -761,7 +818,7 @@ def plot_UK_deaths(df_daily, df_rolling):
     #plt.title(dt.date.today().strftime("%Y-%m-%d"), x=0.19, y=0.88, loc='Center', bbox=dict(facecolor='w', edgecolor='k'))
     plt.tight_layout()
 
-def plot_world(df, countries, dftype='deaths'):
+def plot_world(df, countries, start_date, end_date, dftype='deaths'):
     ''' 
     World total and rate of cases/deaths in different countries.
     '''
@@ -770,7 +827,9 @@ def plot_world(df, countries, dftype='deaths'):
     figx = 18.; figy = 8.
     titx = 0.015; tity = 0.87
     dpi = 200
-    start_date = date(2020, 1, 1)
+    #start_date = date(2020, 1, 1)
+    #end_date = max(df.columns)+relativedelta(months=3)
+    title_date = min(max(df.columns), end_date)
 
     plt.subplots(2, 1, figsize=(figx,figy), dpi=dpi)
 
@@ -790,15 +849,14 @@ def plot_world(df, countries, dftype='deaths'):
         plt.ylabel(ylab)
         plt.xlabel(None)
         plt.ylim(bottom=0.)
-        plt.xlim([start_date, max(df.columns)+relativedelta(months=3)])
+        plt.xlim((start_date, end_date))
         _, ymax = ax.get_ylim()
         if ymax >= 1e3:
             ax.get_yaxis().set_major_formatter(ticker.FuncFormatter(lambda x, _: format(int(x), ',')))
         if iplot == 1:
-            plt.legend(loc='upper right', edgecolor='k')
-            date_title = max(df.columns) # Not sure why this works, but it does
-            title = dftype.capitalize()+': '+date_title.strftime("%Y-%m-%d")
-            plt.title(title, x=titx, y=tity, loc='Left', bbox=dict(facecolor='w', edgecolor='k'))
+            title = dftype.capitalize()+': '+title_date.strftime("%Y-%m-%d")
+            plt.legend(title=title, loc='upper left', edgecolor='k')
+            #plt.title(title, x=titx, y=tity, loc='Left', bbox=dict(facecolor='w', edgecolor='k'))
             xfmt = ticker.NullFormatter()
         else:
             ax.get_legend().remove()
@@ -838,7 +896,7 @@ def plot_world_deaths_per_case(df_deaths, df_cases, countries):
 
 ### ###
 
-### UK data ###
+### UK ###
 
 def download_data(area, metrics, verbose=True):
     '''
@@ -1015,57 +1073,6 @@ def useful_info(regions, data):
         # White space
         print()
 
-def sort_month_axis(plt):
-    '''
-    Get the months axis of a plot looking nice
-    '''
-    locator_monthstart = dates.MonthLocator() # Start of every month
-    locator_monthmid = dates.MonthLocator(bymonthday=15) # Middle of every month
-    fmt = dates.DateFormatter('%b') # Specify the format - %b gives us Jan, Feb...
-    X = plt.gca().xaxis
-    X.set_major_locator(locator_monthstart)
-    X.set_minor_locator(locator_monthmid)
-    X.set_major_formatter(ticker.NullFormatter())
-    X.set_minor_formatter(fmt)
-    plt.tick_params(axis='x', which='minor', bottom=False, labelbottom=True)
-    plt.xlabel(None)
-
-def plot_month_spans(plt, color='black', alpha=0.05):
-    '''
-    Plot the spans between months
-    '''
-    for year in [2020, 2021, 2022, 2023]:
-        for month in [2, 4, 6, 8, 10, 12]:
-            plt.axvspan(dt.date(year, month, 1), 
-                        dt.date(year, month, 1)+relativedelta(months=+1), 
-                        alpha=alpha, 
-                        color=color, 
-                        lw=0., 
-                        )
-
-def plot_lockdown_spans(plt, data, region, color='red', alpha=0.25, label='Lockdown'):
-    '''
-    Plot the spans of lockdown
-    '''
-    for id, dates in enumerate(lockdowns.get(region)):
-        lockdown_start_date = dates[0]
-        if len(dates) == 1:
-            lockdown_end_date = max(data.date)
-        elif len(dates) == 2:
-            lockdown_end_date = dates[1]
-        else:
-            raise TypeError('Lockdown dates should have either one or two entries')
-        if id == 0:
-            llabel = label
-        else:
-            llabel = None
-        plt.axvspan(lockdown_start_date, lockdown_end_date, 
-                    alpha=alpha, 
-                    color=color, 
-                    label=llabel,
-                    lw=0.,
-                   )
-
 def plot_bar_data(df, start_date, end_date, regions, 
     outfile=None, pop_norm=True, Nmax=None, plot_type='Square', legend_location='left',
     hosp_fac=hosp_fac, death_fac=death_fac, 
@@ -1088,7 +1095,7 @@ def plot_bar_data(df, start_date, end_date, regions,
     pop_num = pop_norm_num
     bar_width = 1.
     use_seaborn = True
-    date = max(df['date'])
+    title_date = min(end_date, max(df['date']))
     bar_alpha = 1.
     deaths = { # Comparable deaths
         #'All-cause deaths in a typical year': 530841./365., # 2019 total averaged over 365 days
@@ -1229,7 +1236,7 @@ def plot_bar_data(df, start_date, end_date, regions,
             for i, death in enumerate(deaths.keys()):
                 delta = 50.
                 plt.axhline(deaths[death]*death_fac, color='black', alpha=0.8, ls=':')
-                plt.text(max(df['date'])+relativedelta(days=15), (deaths[death]+delta)*death_fac, death)
+                plt.text(end_date+relativedelta(days=15), (deaths[death]+delta)*death_fac, death)
 
         # Ticks and month arragement on x axis
         sort_month_axis(plt)
@@ -1253,7 +1260,7 @@ def plot_bar_data(df, start_date, end_date, regions,
 
         # Title that is region
         if n == 1:
-            title = region+'\n%s'%(date.strftime("%Y-%m-%d"))
+            title = region+'\n%s'%(title_date.strftime("%Y-%m-%d"))
             ytit = 0.85
         else:
             title = region
@@ -1288,8 +1295,7 @@ def plot_bar_data(df, start_date, end_date, regions,
                 ytit = 0.93
             elif n == 9:
                 ytit = 0.89
-            title = date.strftime("%Y-%m-%d")
-            plt.title(title, x=xtit, y=ytit, loc=legend_location, bbox=dict(facecolor='w', edgecolor='k'))
+            plt.title(title_date, x=xtit, y=ytit, loc=legend_location, bbox=dict(facecolor='w', edgecolor='k'))
 
         # Legend
         if (n == 9 and i == 2) or (n == 4 and i == 1) or n==1:
@@ -1324,7 +1330,7 @@ def plot_rolling_data(df, start_date, end_date, regions, pop_norm=True, plot_typ
     plot_lockdowns = True
     plot_months = True
     figx = 17.; figy = 6.
-    date = max(df['date'])
+    title_date = min(end_date, max(df['date']))
     dpi = 200
 
     ### Figure options ###
@@ -1362,7 +1368,7 @@ def plot_rolling_data(df, start_date, end_date, regions, pop_norm=True, plot_typ
                  color='C{}'.format(i), 
                  label=region
                 )
-        plt.title('Daily new '+plot_type.lower()+': %s'%(date.strftime("%Y-%m-%d")))
+        plt.title('Daily new '+plot_type.lower()+': %s'%(title_date.strftime("%Y-%m-%d")))
 
     # Ticks and month arragement on x axis
     sort_month_axis(plt)
@@ -1387,7 +1393,7 @@ def plot_doubling_times(df, start_date, end_date, regions, plot_type='Cases'):
     plot_months = True
     figx = 17.; figy = 6.
     ymin = 0.; ymax = 30.
-    date = max(df['date'])
+    title_date = min(end_date, max(df['date']))
     dpi = 200
 
     ### Figure options ###
@@ -1421,7 +1427,7 @@ def plot_doubling_times(df, start_date, end_date, regions, plot_type='Cases'):
                      ls=ls,
                      label=label,
                     )
-        plt.title(plot_type+' doubling or halving time: %s'%(date.strftime("%Y-%m-%d")))
+        plt.title(plot_type+' doubling or halving time: %s'%(title_date.strftime("%Y-%m-%d")))
 
     # Axes limits
     sort_month_axis(plt)
