@@ -58,6 +58,78 @@ def d_ELU(x, alpha=1.):
 
 ### ###
 
+### Propagation ###
+
+def forward_propagation_three_layer(x, w1, w2, w3, act=LU):
+    '''
+    Forward propagation through a three-layer neural network
+    Takes an input 'x' and layer weights w1, w2, w3
+    Activation function should be non-linear to make network non-trivial
+    Output is y
+    '''
+    x0 = x               # Input layer
+    x1 = act(x0.dot(w1)) # First hidden layer
+    x2 = act(x1.dot(w2)) # Second hidden layer
+    x3 = x2.dot(w3)      # Output layer (no non-linearity)
+    y = x3               # Output prediction
+    return y, [x0, x1, x2, x3]
+
+def backward_propagation_three_layer(dL, x0, x1, x2, w1, w2, w3, dact=d_LU):
+    '''
+    Backward propagation through a three-layer neural network
+    Used to determine weight updates
+    Takes in dL = dL/dy as well as neuron values (x0, x1, x2) and weights (w1, w2, w3)
+    Return is dL/dw for each weight matrix
+    NOTE: w1 is not used in computations, which is a bit odd
+    '''
+    grad_x3 = dL                         # dL/dx3 (all dL/dx are vectors)
+    grad_w3 = x2.T.dot(grad_x3)          # dL/dw3 (all dL/dw are matrices)
+    grad_x2 = grad_x3.dot(w3.T)          # dL/dx2
+    grad_w2 = x1.T.dot(grad_x2*dact(x2)) # dL/dw2; note element-wise product with the activation derivative
+    grad_x1 = grad_x2.dot(w2.T)          # dL/dx1
+    grad_w1 = x0.T.dot(grad_x1*dact(x1)) # dL/dw1; note element-wise product with the activation derivative
+    return [grad_w1, grad_w2, grad_w3]
+
+def forward_propagation(x, ws, act=LU):
+    '''
+    Forward propagation through a fully connected neural network
+    Takes an input 'x' and a list of layer weight matrices 'ws' (n)
+    Activation function should be non-linear to make network non-trivial
+    Output is the value from the final layer and all the neuron values (n+1)
+    '''
+    x_prev = x; xs = [x]
+    for i, w in enumerate(ws):
+        if i != len(ws)-1:
+            x_new = act(x_prev.dot(w))
+        else:
+            x_new = x_prev.dot(w) # No non-linearity with final layer
+        xs.append(x_new)
+        x_prev = x_new
+    y = x_new
+    return y, xs
+
+def backward_propagation(dL, xs, ws, dact=d_LU):
+    '''
+    Backward propagation through a three-layer neural network
+    Used to determine weight updates
+    Input dL = dL/dy as well as neuron values (xs; n+1) and weights (ws; n)
+    Return is dL/dw for each weight matrix
+    NOTE: First layer weights are not used in computations, which is a bit odd
+    '''
+    n = len(ws); grad_ws = []
+    for i in range(n):
+        if i == 0:
+            grad_x = dL                     # First neuron gradient is dL/dx[-1]
+            grad_w = xs[-2-i].T.dot(grad_x) # First weight gradient has no non-linearity
+        else:
+            grad_x = grad_x.dot(ws[0-i].T)                 # dL/dx are all vectors
+            grad_w = xs[-2-i].T.dot(grad_x*dact(xs[-1-i])) # dL/dw are matrices 
+        grad_ws.append(grad_w)
+    grad_ws.reverse() # Reverse list to get first-layer weight gradients first
+    return grad_ws
+
+### ###
+
 ### Optimization ###
 
 def GradientDescent(grad, x, alpha=1e-3, **kwargs):
