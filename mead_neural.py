@@ -63,6 +63,7 @@ def d_ELU(x, alpha=1.):
 def forward_propagation_three_layer(x, w1, w2, w3, act=LU):
     '''
     Forward propagation through a three-layer neural network
+    This is a two-hidden-layer network
     Takes an input 'x' and layer weights w1, w2, w3
     Activation function should be non-linear to make network non-trivial
     Output is y
@@ -77,6 +78,7 @@ def forward_propagation_three_layer(x, w1, w2, w3, act=LU):
 def backward_propagation_three_layer(dL, x0, x1, x2, w1, w2, w3, dact=d_LU):
     '''
     Backward propagation through a three-layer neural network
+    This is a two-hidden-layer network
     Used to determine weight updates
     Takes in dL = dL/dy as well as neuron values (x0, x1, x2) and weights (w1, w2, w3)
     Return is dL/dw for each weight matrix
@@ -94,6 +96,7 @@ def forward_propagation(x, ws, act=LU):
     '''
     Forward propagation through a fully connected neural network
     Takes an input 'x' and a list of layer weight matrices 'ws' (n)
+    This is an n-1 hidden-layer network
     Activation function should be non-linear to make network non-trivial
     Output is the value from the final layer and all the neuron values (n+1)
     '''
@@ -110,9 +113,9 @@ def forward_propagation(x, ws, act=LU):
 
 def backward_propagation(dL, xs, ws, dact=d_LU):
     '''
-    Backward propagation through a three-layer neural network
-    Used to determine weight updates
+    Backward propagation through a three-layer neural network to determine weight updates
     Input dL = dL/dy as well as neuron values (xs; n+1) and weights (ws; n)
+    This is an n-1 hidden-layer network
     Return is dL/dw for each weight matrix
     NOTE: First layer weights are not used in computations, which is a bit odd
     '''
@@ -127,6 +130,36 @@ def backward_propagation(dL, xs, ws, dact=d_LU):
         grad_ws.append(grad_w)
     grad_ws.reverse() # Reverse list to get first-layer weight gradients first
     return grad_ws
+
+def forward_timestep(i, x0, x1, x2, W0, W1, act):
+    from numpy import matmul # Replace with dot
+    x1[i] = act(matmul(W0[i], x0[i]))
+    x2[i] = matmul(W1[i], x1[i]) # No non-linear function to output layer
+
+def forward_timestep_lag(i, x0, x1, x2, W0, W1, l01, l12, act):
+    from numpy import matmul # Replace with dot
+    x1[i] = act(matmul(W0[i], x0[i-l01]))
+    x2[i] = matmul(W1[i], x1[i-l12])
+
+def forward_timestep_lag_corrected(i, x0, x1, x2, W0, W1, l01, l12, act):
+    from numpy import matmul # Replace with dot
+    x1[i] = act(matmul(W0[i], x0[i-l01]+(x0[i-l01]-x0[i-l01-1])*l01))
+    x2[i] = matmul(W1[i], x1[i-l12]+(x1[i-l12]-x1[i-l12-1])*l12)
+
+def backward_timestep(i, x0, x1, x2, g0, g1, g2, W0, W1, dact):
+    from numpy import matmul # Replace with dot
+    g1[i] = matmul(g2[i], W1[i])
+    g0[i] = matmul(g1[i]*dact(x1[i]), W0[i])
+
+def backward_timestep_lag(i, x0, x1, x2, g0, g1, g2, W0, W1, l01, l12, dact):
+    from numpy import matmul # Replace with dot
+    g1[i] = matmul(g2[i-l12], W1[i])
+    g0[i] = matmul(g1[i-l01]*dact(x1[i]), W0[i])
+
+def backward_timestep_lag_corrected(i, x0, x1, x2, g0, g1, g2, W0, W1, l01, l12, dact):
+    from numpy import matmul # Replace with dot
+    g1[i] = matmul(g2[i-l12]+(g2[i-l12]-g2[i-l12-1])*l12, W1[i])
+    g0[i] = matmul((g1[i-l01]+(g1[i-l01]-g1[i-l01-1])*l01)*dact(x1[i-2*(l01+l12)]), W0[i])
 
 ### ###
 
