@@ -1,6 +1,7 @@
 ### Activation functions ###
 
 # TODO: Make classes with forward- and backward-propagation methods
+# TODO: Automatic weight updates and network training functions
 
 def LU(x): # Linear Unit
     return x
@@ -17,8 +18,9 @@ def tanh(x):
     return nptanh(x)
 
 def ReLU(x): # Rectified Linear Unit
-    from numpy import where
-    return where(x<0., 0., x)
+    from numpy import where, maximum
+    #return where(x<0., 0., x)
+    return maximum(0., x)
 
 def leakyReLU(x, alpha=0.1): # Leaky Rectified Linear Unit
     from numpy import where
