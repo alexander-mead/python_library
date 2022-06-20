@@ -16,5 +16,4 @@ def Wein_law_nu(T):
     Calculates the frequency corresponding to the black-body maximum (Wein's law) [Hz]
     T: black-body temperature [K]
     '''
-    a = 5.879e10 # Wein constant TODO: Move to constants or calculate
-    return T*a
+    return T*const.a_Wein
