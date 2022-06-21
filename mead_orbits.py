@@ -18,6 +18,7 @@ def true_anomaly(M, e, approximate=False):
     '''
     Compute the true anomaly from the mean anomaly using root finding
     '''
+    #nu = M+2.*e*np.sin(M) # Approximate numerical inversion for small e
     f = lambda nu: mean_anomaly(nu, e, approximate)-M
     nu = fsolve(f, M) # Initial guess that nu = M
     return nu[0]
