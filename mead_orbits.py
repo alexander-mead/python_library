@@ -8,7 +8,7 @@ def mean_anomaly(nu, e, approximate=False):
     '''
     if approximate: # Taylor expansion for low e
         result = nu-2.*e*np.sin(nu)
-    else:
+    else: # Integral for full result
         integrand = lambda x: 1./(1.+e*np.cos(x))**2
         integral, _ = quad(integrand, 0., nu)
         result = ((1.-e**2)**1.5)*integral
