@@ -170,7 +170,7 @@ def expectation_integer_distribution(p, f, nmax, *args):
     '''
     The expectation value of some function of an integer probability distribuion
     P(n, *args): Probability distribution (mass) function
-    f(n): Function over which to compute expectation value (e.g., f(n) = n would compute mean; f(n) = n^2 second moment)
+    f(n): Function over which to compute expectation value (e.g., f(n)=n is mean; f(n)=n^2 is second moment)
     nmax: Maximum n to compute sum
     *args: to be passed to p(n, *args)
     '''
@@ -216,5 +216,66 @@ def variance_integer_distribution(p, nmax, *args):
     mom1 = moment_integer_distribution(p, 1, nmax, *args)
     mom2 = moment_integer_distribution(p, 2, nmax, *args)
     return mom2-mom1**2
+
+### ###
+
+### MCMC ###
+
+def MCMC(proposal, f, start, n_chains=5, n_points=int(1e3)):
+    '''
+    Simple MCMC with m chains of length n
+    start: starting location in parameter space
+    proposal: proposal(x) distribution function
+    f: f(x) target function
+    n_chains: Number of independent chains
+    n_points: Number of points per chain
+    '''
+    chains = []
+    for _ in range(n_chains):
+        x = start; p = f(x)
+        xs = []; x_old = x; p_old = p
+        for _ in range(n_points):
+            x_new = proposal(x_old)            # Sample from the proposal
+            p_new = f(x_new)                   # New probability
+            acceptance = min(p_new/p_old, 1)   # Acceptance probability
+            accept = np.random.uniform(0., 1.) # Accept or reject
+            if accept < acceptance:
+                x_old = x_new; p_old = p_new
+            #if x_old != start: xs.append(x_old) # Avoid adding the first sample?
+            xs.append(x_old)
+        chains.append(np.array(xs))
+    return chains
+
+def Gelman_Rubin_statistic(chains, verbose=False):
+    '''
+    Calculate the Gelman-Rubin statistic
+    chains: A list of equal-length MCMC chains
+    '''
+    # Initial information
+    m = len(chains)
+    n = len(chains[0])
+    d = 1 if (len(chains[0].shape) == 1) else chains[0].shape[1]
+    if verbose:
+        print('Number of chains:', m)
+        print('Number of parameters:', d)
+        print('Chain lengths:', n)
+
+    # Calculate the mean and variance for each chain
+    chain_means = []; chain_variances = []
+    for i, chain in enumerate(chains):
+        if len(chain) != n: raise ValueError('All chains must be the same length')
+        chain_mean = chain.mean(axis=0)       # Sample mean of chain i
+        chain_var = chain.var(axis=0, ddof=1) # Sample variance of chain i
+        if verbose: print('Chain:', i, 'mean:', chain_mean, 'variance:', chain_var)
+        chain_means.append(chain_mean); chain_variances.append(chain_var)
+    chain_means = np.array(chain_means); chain_variances = np.array(chain_variances)
+
+    # Calculate the intra-chain variances; this is s^2; underestimates variance
+    B = n* np.atleast_1d(chain_means).var(axis=0, ddof=1) # Sample variance of sample means from chains
+    overall_variance = np.atleast_1d(chain_variances).mean(axis=0)
+    sigma2_hat = overall_variance*(n-1)/n+B/n # This overestimates variance
+    R = np.sqrt(sigma2_hat/overall_variance)  # Gelman-Rubin statistic
+    if verbose: print('Gelman-Rubin statistics:', R)
+    return R
 
 ### ###
