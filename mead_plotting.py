@@ -48,7 +48,8 @@ import matplotlib.pyplot as plt
 #     #plt.tight_layout()
 #     plt.show()
 
-def triangle_plots(latents, truths, labels, dicts_of_samples,
+def triangle_plots(dicts_of_samples, params, labels,
+    truths = None,
     fig_size = 3.,
     hist_bins = 'auto',
     hist_density = True,
@@ -58,25 +59,24 @@ def triangle_plots(latents, truths, labels, dicts_of_samples,
     ):
     '''
     Makes a triangle plot
-    latents: List of 
-    truths: List of true values of the data
-    labels: List of axis labels
-    dict_of_samples: Dictionary of samples (e.g., dict['x'] = [1., 1.1., 1.3, ...])
+    params:
+    dicts_of_samples: List of dictionaries of samples (e.g., dict['x'] = [1., 1.1., 1.3, ...])
+    params: List of names of parameters to plot (dictionary keys)
+    labels: List of axis labels corresponding to parameters
+    truths: List of true values of the parameters TODO: Option for None
     '''
-
-    n = len(latents)
-    if n != len(truths) or n != len(labels):
-        raise ValueError('Error {latents, truths, ids, labels} must all be lists of the same length')
+    n = len(params)
     plt.subplots(figsize=(n*fig_size, n*fig_size))
     iplot = 0
-    for ir, (latent_r, true_r, label_r) in enumerate(zip(latents, truths, labels)):
-        for ic, (latent_c, true_c, label_c) in enumerate(zip(latents, truths, labels)):
+    for ir, (param_r, label_r) in enumerate(zip(params, labels)):
+        for ic, (param_c, label_c) in enumerate(zip(params, labels)):
             iplot += 1
             if ir == ic:
                 plt.subplot(n, n, iplot)
-                plt.axvline(true_r, color='black', ls='--', alpha=0.7, label='Truth')
+                if truths is not None:
+                    plt.axvline(truths[ir], color='black', ls='--', alpha=0.7, label='Truth')
                 for dict_of_samples in dicts_of_samples:
-                    plt.hist(dict_of_samples[latent_r], 
+                    plt.hist(dict_of_samples[param_r], 
                         bins=hist_bins, density=hist_density, alpha=hist_alpha,
                     )
                 plt.xlabel(label_r) if ic==n-1 else plt.gca().set_xticklabels([])
@@ -84,9 +84,10 @@ def triangle_plots(latents, truths, labels, dicts_of_samples,
                 if iplot == 1: plt.legend(loc='upper left', bbox_to_anchor=(1., 1.))
             elif ir > ic:
                 plt.subplot(n, n, iplot)
-                plt.plot([true_c], [true_r], color='black', marker='x', alpha=0.7, label='Truth')
+                if truths is not None:
+                    plt.plot([truths[ic]], [truths[ir]], color='black', marker='x', alpha=0.7, label='Truth')
                 for dict_of_samples in dicts_of_samples:
-                    plt.scatter(dict_of_samples[latent_c], dict_of_samples[latent_r], 
+                    plt.scatter(dict_of_samples[param_c], dict_of_samples[param_r], 
                             alpha=scatter_alpha, s=scatter_size,
                     )
                 plt.xlabel(label_c) if ir==n-1 else plt.gca().set_xticklabels([])
