@@ -135,8 +135,8 @@ def count_entries_of_nested_list(listOfElem):
 def create_unique_list(list_with_duplicates):
     '''
     Takes a list that may contain duplicates and returns a new list with the duplicates removed
-    TODO: Check that the ordering is preserved. Is the first occurance kept and later ones discarded?
     '''
+    #return list(set(list_with_duplicates)) # NOTE: This does not preserve order
     return list(dict.fromkeys(list_with_duplicates))
 
 def remove_list_from_list(removal_list, original_list):
@@ -253,6 +253,7 @@ def print_array_attributes(x):
 def print_full_array(xs, title=None):
     '''
     Print full array(-like) to screen with indices
+    # TODO: Look at pprint module
     '''
     if title is not None:
         print(title)
@@ -354,25 +355,6 @@ def covariance_matrix(sigmas, R):
     S = diag(sigmas)
     cov = matmul(matmul(S, R), S)
     return cov
-
-# use numpy deg2rad() or radians()
-#def degrees_to_radians(theta):
-#    from numpy import pi
-#    return theta*pi/180.
-
-# use numpy rad2deg or degrees()
-#def radians_to_degrees(theta):
-#    from numpy import pi
-#    return theta*180./pi
-
-# A sum function that returns nan if any of the values to be summed is a nan
-# This should be the default behaviour of the np.sum function
-#def nansum(a, **kwargs):
-#    from numpy import isnan, nan, nansum
-#    if isnan(a).any():
-#        return nan
-#    else:
-#        return nansum(a, **kwargs)
 
 ### ###
 
