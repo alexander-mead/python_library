@@ -221,18 +221,42 @@ def variance_integer_distribution(p, nmax, *args):
 
 ### MCMC ###
 
-def MCMC(proposal, f, start, n_chains=5, n_points=int(1e3)):
+def Gibbs_sampling(conditionals, start, n_chains=5, n_points=int(1e3), burn_frac=0.):
     '''
-    Simple MCMC with m chains of length n
+    Simple Gibbs sampling with m chains of length n
+    conditionals: sampling function from conditional probability distributions
+        The i-th conditional distribution is supposed to be P(x_i | x_{-i}; y)
+        However, the function call is P(x) with array x
+        The i-th element of x is supposed to be the random variable 
+        with all other components of x being held fixed (conditioned upon)
     start: starting location in parameter space
-    proposal: proposal(x) distribution function
-    f: f(x) target function
     n_chains: Number of independent chains
     n_points: Number of points per chain
+    burn_frac: Fraction of the beginning of the chain to remove
     '''
     chains = []
     for _ in range(n_chains):
-        x = start; p = f(x)
+        x = start; xs = []
+        for _ in range(n_points):
+            for i, conditional in enumerate(conditionals):
+                x[i] = conditional(x)
+            xs.append(x.copy())
+        chains.append(np.array(xs[int(n_points*burn_frac):]))
+    return chains
+
+def MCMC_sampling(proposal, f, start, n_chains=5, n_points=int(1e3), burn_frac=0.):
+    '''
+    Simple MCMC with m chains of length n
+    proposal: sample from proposal(x) distribution function
+    f: f(x) target function
+    start: starting location in parameter space
+    n_chains: Number of independent chains
+    n_points: Number of points per chain
+    burn_frac: Fraction of the beginning of the chain to remove
+    '''
+    chains = []
+    for _ in range(n_chains):
+        x = np.copy(start); p = f(x)
         xs = []; x_old = x; p_old = p
         for _ in range(n_points):
             x_new = proposal(x_old)            # Sample from the proposal
@@ -243,8 +267,63 @@ def MCMC(proposal, f, start, n_chains=5, n_points=int(1e3)):
                 x_old = x_new; p_old = p_new
             #if x_old != start: xs.append(x_old) # Avoid adding the first sample?
             xs.append(x_old)
-        chains.append(np.array(xs))
+        chains.append(np.array(xs[int(n_points*burn_frac):]))
     return chains
+
+def HMC_sampling(f, df, start, n_chains=5, n_points=int(1e3), burn_frac=0., M=1., dt=0.1, T=1.):
+    '''
+    Hamiltonian Monte Carlo with m chains of length n
+    f: f(x) target function
+    df: df(x) gradient of target function
+    start: starting location in parameter space
+    n_chains: Number of independent chains
+    n_points: Number of points per chain
+    burn_frac: Fraction of the beginning of the chain to remove
+    M: Mass for the 'particles' TODO: Make matrix
+    dt: Time-step for the particles
+    T: Integration time per step for the particles
+    '''
+    # Functions for leap-frog integration
+    def leap_frog_step(x, p, f, df, M, dt):
+        p_half = p-0.5*dt*df(x)/f(x)
+        x_full = x+(dt/M)*p_half
+        p_full = p_half-0.5*dt*df(x_full)/f(x_full)
+        return x_full, p_full
+    def leap_frog_integration(x_init, p_init, f, df, M, dt, T):
+        N_steps = int(T/dt)
+        x = np.copy(x_init); p = np.copy(p_init)
+        for _ in range(N_steps):
+            x, p = leap_frog_step(x, p, f, df, M, dt)
+        return x, p
+    def Hamiltonian(x, p, f, M):
+        T = 0.5*M*np.dot(p, p)
+        V = -np.log(f(x))
+        return T+V
+    # MCMC step
+    chains = []
+    for _ in range(n_chains):
+        x_old = np.copy(start); xs = []
+        for i in range(n_points):
+            p_old = np.random.normal(0., 1., size=x_old.size) # Randomize momentum each go
+            if i == 0: H_old = Hamiltonian(x_old, p_old, f, M)
+            x_new, p_new = leap_frog_integration(x_old, p_old, f, df, M, dt, T)
+            H_new = Hamiltonian(x_new, p_new, f, M)
+            acceptance = min(np.exp(H_old-H_new), 1) # Acceptance probability
+            accept = np.random.uniform(0., 1.) # Accept or reject
+            if accept < acceptance:
+                x_old = x_new; H_old = H_new
+            #if i==0: xs.append(x_old) # Avoid adding the first sample?
+            xs.append(x_old)
+        chains.append(np.array(xs[int(n_points*burn_frac):]))
+    return chains
+
+def burn_chains(chains, burn_frac=0.5):
+    '''
+    Remove the first fraction of a chain as burn in
+    '''
+    n = len(chains[0])
+    new_chains = [chain[int(n*burn_frac):] for chain in chains]
+    return new_chains
 
 def Gelman_Rubin_statistic(chains, verbose=False):
     '''
@@ -252,8 +331,7 @@ def Gelman_Rubin_statistic(chains, verbose=False):
     chains: A list of equal-length MCMC chains
     '''
     # Initial information
-    m = len(chains)
-    n = len(chains[0])
+    m = len(chains); n = len(chains[0])
     d = 1 if (len(chains[0].shape) == 1) else chains[0].shape[1]
     if verbose:
         print('Number of chains:', m)
