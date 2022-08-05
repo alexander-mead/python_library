@@ -33,7 +33,7 @@ def triangle_plots(dicts_of_samples, params, labels,
                     )
                 plt.xlabel(label_r) if ic==n-1 else plt.gca().set_xticklabels([])
                 plt.yticks([])
-                if iplot == 1: plt.legend(loc='upper left', bbox_to_anchor=(1., 1.))
+                if (truths is not None) and iplot == 1: plt.legend(loc='upper left', bbox_to_anchor=(1., 1.))
             elif ir > ic:
                 plt.subplot(n, n, iplot)
                 if truths is not None:
