@@ -342,6 +342,7 @@ def HMC_sampling_torch(lnf, start, n_chains=5, n_points=int(1e3), burn_frac=0.5,
         x.requires_grad_()
         lnf(x).backward()
         dlnfx = x.grad
+        x = x.detach()
         return dlnfx
     def forward_Euler_step(x, p, lnf, M, dt):
         dlnfx = get_gradient(x, lnf)
