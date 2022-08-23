@@ -8,6 +8,7 @@ def triangle_plots(dicts_of_samples, params, labels,
     hist_alpha = 0.7,
     scatter_alpha = 0.1,
     scatter_size = 5.,
+    tight_layout = False,
     ):
     '''
     Makes a triangle plot
@@ -44,5 +45,5 @@ def triangle_plots(dicts_of_samples, params, labels,
                     )
                 plt.xlabel(label_c) if ir==n-1 else plt.gca().set_xticklabels([])
                 plt.ylabel(label_r) if ic==0 else plt.gca().set_yticklabels([])
-    #plt.tight_layout()
+    if tight_layout: plt.tight_layout()
     plt.show()
