@@ -5,6 +5,13 @@
 def module_info(mod):
     print(mod.__name__, mod.__version__, mod.__file__)
 
+def none_or_string(value):
+    if value == 'None':
+        result = None
+    else:
+        result = value
+    return result
+
 ### ###
 
 ### This of functions use only basic Python ###
