@@ -2,9 +2,15 @@ import numpy as np
 from scipy.optimize import fsolve
 from scipy.integrate import quad
 
+def _mean_anomaly(nu, e):
+    integrand = lambda x: 1./(1.+e*np.cos(x))**2
+    integral, _ = quad(integrand, 0., nu)
+    result = ((1.-e**2)**1.5)*integral
+    return result
+
 class orbit():
 
-    def __init__(self, Mass=1., a=1., e=0., omega=0., nu=0., G=4.*np.pi**2):
+    def __init__(self, Mass=1., a=1., e=0., omega=0., nu=None, m=None, G=4.*np.pi**2):
 
         # Gravitational constant
         self.G = G
@@ -14,12 +20,23 @@ class orbit():
         self.a = a
         self.e = e
         self.omega = np.deg2rad(omega)
-        self.nu = np.deg2rad(nu)
+
+        # Anomaly angles
+        if (nu is None) and (m is None):
+            raise ValueError('You must specify either mean anomaly or true anomaly.')
+        elif nu is None:
+            self.m = np.deg2rad(m)
+            self.nu = self.true_anomaly()
+        elif m is None:
+            self.nu = np.deg2rad(nu)
+            self.m = self.mean_anomaly()
+        else:
+            raise ValueError('Cannot specify both mean anomaly and true anomaly')
 
         # Calculations
         self.P = self.Period()
-        self.M = self.mean_anomaly()
-
+        self.theta = self.omega+self.nu
+        
         # Vectorisations
         self.time = np.vectorize(self._time)
         self.angle = np.vectorize(self._angle)
@@ -32,10 +49,12 @@ class orbit():
         print('Semi-major axis:', self.a)
         print('Eccentricity:', self.e)
         print('Argument of periapsis [deg]:', np.rad2deg(self.omega))
+        print('== Anomalies ==')
         print('True anomaly [deg]:', np.rad2deg(self.nu))
+        print('Mean anomaly [deg]:', np.rad2deg(self.m))
         print('== Derived Parameters ==')
         print('Period:', self.P)
-        print('Mean anomaly [deg]:', np.rad2deg(self.M))
+        print('Theta [deg]:', np.rad2deg(self.theta))
         return ''
 
 
@@ -45,23 +64,25 @@ class orbit():
         '''
         nu = self.nu; e = self.e
         if approximate: # Taylor expansion for low e
-            result = nu-2.*e*np.sin(nu)
+            m = nu-2.*e*np.sin(nu)
         else: # Integral for full result
-            integrand = lambda x: 1./(1.+e*np.cos(x))**2
-            integral, _ = quad(integrand, 0., nu)
-            result = ((1.-e**2)**1.5)*integral
-        return result
+            m = _mean_anomaly(nu, e)
+        return m
 
 
     def true_anomaly(self, approximate=False):
         '''
         Compute the true anomaly from the mean anomaly using root finding
         '''
-        e = self.e; M = self.M
-        #nu = M+2.*e*np.sin(M) # Approximate numerical inversion for small e
-        f = self.mean_anomaly(approximate)-M
-        nu = fsolve(f, M) # Initial guess that nu = M
-        return nu[0]
+        m = self.m; e = self.e
+        if approximate:
+            nu = m+2.*e*np.sin(m) # Approximate numerical inversion for small e
+        else:
+            f = lambda x: _mean_anomaly(x, e)-m
+            #nu_guess = m # This is probably a pretty good first guess
+            nu_guess = self.true_anomaly(approximate=True) # Use approximate (e<<1) solution as first guess
+            nu = fsolve(f, nu_guess)[0] # Initial guess that nu = M
+        return nu
 
 
     def semi_major_axis(self):
