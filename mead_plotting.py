@@ -21,8 +21,6 @@ def triangle_plots(dicts_of_samples: list, params: dict, labels: dict,
     n = len(params)
     plt.subplots(figsize=(n*fig_size, n*fig_size))
     iplot = 0
-    #for ir, (param_r, label_r) in enumerate(zip(params, labels)):
-        #for ic, (param_c, label_c) in enumerate(zip(params, labels)):
     for ir, param_r in enumerate(params):
         for ic, param_c in enumerate(params):
             iplot += 1
