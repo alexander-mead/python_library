@@ -334,7 +334,7 @@ def plot_Canada_data(df, df_hosp, start_date, end_date, death_fac=20, Nmax=None)
             color=color, 
             linewidth=0., 
             alpha=bar_alpha,
-            label=label
+            label=label,
             )
 
     # Lines
