@@ -2,8 +2,8 @@ import sys, os
 import numpy as np
 import matplotlib.pyplot as plt
 
+import pyprob
 from pyprob.distributions import Empirical
-from pyprob.InferenceEngine import IMPORTANCE_SAMPLING_WITH_INFERENCE_NETWORK
 
 def load_training_log(training_logfile):
     data = np.loadtxt(training_logfile, skiprows=1, delimiter=',', converters={8: lambda _: 0.})
@@ -83,7 +83,7 @@ def get_Jeffrys_posterior(model, data, data_error, num_traces_posterior, num_tra
                 sys.stdout = open(os.devnull, 'w') # Suppress printing
         observational_posterior = model.posterior(
             num_traces=num_traces_per_go,
-            inference_engine=IMPORTANCE_SAMPLING_WITH_INFERENCE_NETWORK,
+            inference_engine=pyprob.InferenceEngine.IMPORTANCE_SAMPLING_WITH_INFERENCE_NETWORK,
             observe={obs_name: obs},
             )
         ESS.append(observational_posterior._effective_sample_size)
