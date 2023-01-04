@@ -203,9 +203,9 @@ class cosmology():
         r0 = self.rp(1.)
         t0 = self.t(1.)
         print('Initialise_distances: Horizon size [dimensionless]:', r0)
-        print('Initialise_distances: Horizon size [Mpc/h]:', const.Hdist*r0)
+        print('Initialise_distances: Horizon size [Mpc/h]:', const.Hdist_cos*r0)
         print('Initialise_distances: Universe age [dimensionless]:', t0)
-        print('Initialise_distances: Universe age [Gyr/h]:', const.Htime*t0)
+        print('Initialise_distances: Universe age [Gyr/h]:', const.Htime_cos*t0)
         print('Initialise_distances: r(0):',  self.r(0.))
         print('Initialise_distances: rp(0):', self.rp(0.))
         print('Initialise_distances: t(0):',  self.t(0.))
@@ -383,7 +383,7 @@ class cosmology():
         '''
         Physical critical density [(Msun/h)/(Mpc/h)^3]
         '''
-        return const.rhoc*self.H2(a)
+        return const.rhoc_cos*self.H2(a)
 
     def comoving_critical_density(self, a):
         '''
@@ -649,7 +649,7 @@ def comoving_matter_density(Om_m):
     '''
     Comoving matter density, not a function of time [Msun/h / (Mpc/h)^3]
     '''
-    return const.rhoc*Om_m
+    return const.rhoc_cos*Om_m
 
 def physical_matter_density(a, Om_m):
     '''

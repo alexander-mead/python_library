@@ -107,7 +107,7 @@ def is_float_close_to_integer(x):
 def bin_edges_for_integers(a, b=None):
     '''
     Defines a set of bin edges for histograms of integer data
-    e.g., bin_edges_for_integers(1, 5) = 0.5, 1.5, 2.5, 3.5, 4.5, 5.5 so that integers are at centres
+    e.g., bin_edges_for_integers(1, 5) = 0.5, 1.5, 2.5, 3.5, 4.5, 5.5 so that values are at centres
     e.g., bin_edges_for_integers(a) assumes a is array and goes from min-0.5 to max+0.5 in steps of unity
     '''
     if b is None:
@@ -149,18 +149,22 @@ def create_unique_list(list_with_duplicates):
 def remove_list_from_list(removal_list, original_list):
     '''
     Remove items in 'removal_list' if they occur in 'original_list'
-    TODO: Does this only remove the first occurance?
+    NOTE: This only removes the first occurance of something in a list, care if repeated entries
     '''
+    new_list = original_list.copy()
     for item in removal_list:
-        if item in original_list:
-            original_list.remove(item)
+        if item in new_list:
+            new_list.remove(item)
+    return new_list
 
-def remove_multiple_elements_from_list(my_list, indices):
+def remove_multiple_elements_from_list(original_list, indices):
     '''
     Remove multiple elements from a list by providing a list of indices
     '''
+    new_list = original_list.copy()
     for index in sorted(indices, reverse=True):
-        del my_list[index]
+        del new_list[index]
+    return new_list
 
 def second_largest(numbers):
     '''
@@ -177,6 +181,10 @@ def second_largest(numbers):
                 m2 = x
     return m2 if count >= 2 else None
 
+### ###
+
+### This set of functions use numpy ###
+
 def arange(min, max, dtype=None):
     '''
     Sensible arange function for producing integers from min to max inclusive
@@ -185,17 +193,6 @@ def arange(min, max, dtype=None):
     '''
     from numpy import arange
     return arange(min, max+1, dtype=dtype)#, like=like)
-
-### ###
-
-### This set of functions use numpy ###
-
-def unit(x):
-    '''
-    Create a unit vector from a non-unit vector
-    '''
-    from numpy.linalg import norm
-    return x/norm(x)
 
 def linspace_step(start, stop, step):
     '''
