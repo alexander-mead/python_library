@@ -1,3 +1,5 @@
+import numpy as np
+
 ### Functions ###
 
 ### High level ###
@@ -191,8 +193,7 @@ def arange(min, max, dtype=None):
     I hate the inbuilt numpy one with such fury that it frightens me
     TODO: Include step properly, what is this ([start,] stop[, step], ...) square-bracket thing?
     '''
-    from numpy import arange
-    return arange(min, max+1, dtype=dtype)#, like=like)
+    return np.arange(min, max+1, dtype=dtype)#, like=like)
 
 def linspace_step(start, stop, step):
     '''
@@ -200,25 +201,22 @@ def linspace_step(start, stop, step):
     The end point is included only if it falls exaclty on a step
     TODO: Check this actually works with float division issues
     '''
-    from numpy import linspace
     num = 1+int((stop-start)/step)
     new_stop = start+(num-1)*step
-    return linspace(start, new_stop, num)
+    return np.linspace(start, new_stop, num)
 
 def logspace(xmin, xmax, nx):
     '''
     Return a logarithmically spaced range of numbers
     Numpy version is specifically base10, which is insane since log spacing is independent of base
     '''
-    from numpy import logspace, log10
-    return logspace(log10(xmin), log10(xmax), nx)
+    return np.logspace(np.log10(xmin), np.log10(xmax), nx)
 
 def is_power_of_n(x, n):
     '''
     Checks if x is a perfect power of n (e.g., 32 = 2^5)
     '''
-    from mead_special_functions import logn
-    lg = logn(x, n)
+    lg = np.logn(x, n)
     return is_float_close_to_integer(lg)
 
 def is_power_of_two(x):
@@ -231,16 +229,14 @@ def is_perfect_square(x):
     '''
     Checks if argument is a perfect square (e.g., 16 = 4^2)
     '''
-    from numpy import sqrt
-    root = sqrt(x)
+    root = np.sqrt(x)
     return is_float_close_to_integer(root)
 
 def is_perfect_triangle(x):
     '''
     Checks if argument is a perfect triangle number (e.g., 1, 3, 6, 10, ...)
     '''
-    from numpy import sqrt
-    n = 0.5*(sqrt(1.+8.*x)-1.)
+    n = 0.5*(np.sqrt(1.+8.*x)-1.)
     return is_float_close_to_integer(n)
 
 def print_array_attributes(x):
@@ -268,22 +264,19 @@ def array_of_nans(shape, **kwargs):
     '''
     Initialise an array of nans
     '''
-    from numpy import empty, nan
-    return nan*empty(shape, **kwargs)
+    return np.nan*np.empty(shape, **kwargs)
 
 def remove_nans_from_array(x):
     '''
     Remove nans from array x
     '''
-    from numpy import isnan
-    return x[~isnan(x)]
+    return x[~np.isnan(x)]
 
 def array_contains_nan(array):
     '''
     Returns True if the array contains any nan values
     '''
-    from numpy import isnan, sum
-    return isnan(sum(array))
+    return np.isnan(array.sum())
 
 def array_values_at_indices(array, list_of_array_positions):
     '''
@@ -303,7 +296,6 @@ def print_array_statistics(x):
     '''
     Print useful array statistics
     '''
-    from numpy import sqrt
     print('Array statistics')
     n = x.size
     print('size:', n)
@@ -314,7 +306,7 @@ def print_array_statistics(x):
     print('mean:', mean)
     std = x.std()
     var = std**2
-    std_bc = std*sqrt(n/(n-1))
+    std_bc = std*np.sqrt(n/(n-1))
     var_bc = std_bc**2
     print('std:', std)
     print('std (Bessel corrected):', std_bc)
@@ -332,17 +324,16 @@ def standardize_array(x):
         return: standardized array
     NOTE: In sklearn the 'StandardScaler' exists to do exactly this
     '''
-    from numpy import zeros, empty, append
     rows, columns = x.shape
     
-    standardizedArray = zeros(shape=(rows, columns))
-    tempArray = zeros(rows)
+    standardizedArray = np.zeros(shape=(rows, columns))
+    tempArray = np.zeros(rows)
     
     for col in range(columns):
         mean = x[:, col].mean(); std = x[:, col].std()
-        tempArray = empty(0)
+        tempArray = np.empty(0)
         for element in x[:, col]:
-            tempArray = append(tempArray, (element-mean)/std)
+            tempArray = np.append(tempArray, (element-mean)/std)
         standardizedArray[:, col] = tempArray
     return standardizedArray
 
@@ -355,10 +346,16 @@ def covariance_matrix(sigmas, R):
         R - correlation matrix (nxn)
     TODO: Could save memory by having the sigmas run the diagonal of the correlation matrix
     '''
-    from numpy import diag, matmul
-    S = diag(sigmas)
-    cov = matmul(matmul(S, R), S)
+    S = np.diag(sigmas)
+    cov = np.matmul(np.matmul(S, R), S)
     return cov
+
+def find_closest_index_value(x:float, arr:np.array):
+    '''
+    Find the index, value pair of the closest values in array 'arr' to value 'x'
+    '''
+    index = (np.abs(arr-x)).argmin()
+    return index, arr[index]
 
 ### ###
 

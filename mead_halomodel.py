@@ -346,7 +346,7 @@ def Pk_hm(hmod, Ms, ks, profs, Pk_lin, beta=None, sigmas=None, sigma=None, shot=
     t1 = time() # Initial time
 
     # Checks
-    if type(profs) != list: raise TypeError('N must be list')
+    if type(profs) != list: raise TypeError('Profiles must be supplied as a list')
     nf = len(profs) # Number of profiles
     for prof in profs:
         if (ks != prof.k).all(): raise ValueError('k arrays must all be identical to those in profiles')
@@ -475,7 +475,7 @@ def _I_beta(hmod, beta, Ms, nus, Wu, Wv, massu, massv, A):
                 integrand[iM1, iM2] = integrand[iM2, iM1]
     integral = trapz2d(integrand, nus, nus)
     if do_I11 and massu and massv:
-        integral += (A**2)*Wu[0]*Wv[0]/Ms[0]**2
+        integral += beta[0, 0]*(A**2)*Wu[0]*Wv[0]/Ms[0]**2
     if do_I12I21 and massu:
         integrand = np.zeros(len(nus))
         for iM, nu in enumerate(nus):
@@ -553,8 +553,8 @@ def Pk_hm_hu(hmod, Mh, Ms, ks, profs, Pk_lin, beta=None, sigmas=None, sigma=None
                 Pk_2h_array[u, ik] = _P_2h_hu(hmod, Pk_lin, k, Ms, nuh, nus, prof.Wk[:, ik], prof.mass, A)
             else:
                 Pk_2h_array[u, ik] = _P_2h_hu(hmod, Pk_lin, k, Ms, nuh, nus, prof.Wk[:, ik], prof.mass, A, beta[:, ik])
-            Pk_1h_array[ik] = Whs[u][ik] # Simply the halo profile at M=Mh here
-            Pk_hm_array[ik] = Pk_2h_array[ik]+Pk_1h_array[ik]
+            Pk_1h_array[u, ik] = Whs[u][ik] # Simply the halo profile at M=Mh here
+            Pk_hm_array[u, ik] = Pk_2h_array[u, ik]+Pk_1h_array[u, ik]
     t2 = time() # Final time
 
     if verbose:  
@@ -597,7 +597,7 @@ def _I_beta_hu(hmod, beta, Ms, nuh, nus, Wk, mass, A):
 
 ### Beta_NL ###
 
-def interpolate_beta_NL(ks, Ms, Ms_small, beta_NL_small, fill_value):
+def interpolate_beta_NL(ks, Ms, Ms_small, beta_NL_small, fill_value=None):
     '''
     Interpolate beta_NL from a small grid to a large grid for halo-model calculations
     TODO: Remove inefficient loops

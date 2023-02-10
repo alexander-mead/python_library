@@ -1,3 +1,5 @@
+### Differentiation ###
+
 def derivative(f, x, dx=1e-3):
     '''
     Calculate the numerical derivative of f(x) at the point x: df/dx
@@ -6,6 +8,7 @@ def derivative(f, x, dx=1e-3):
     hdx = dx/2.
     df = f(x+hdx)-f(x-hdx) # Two-sided difference in numerator
     return df/dx
+
 
 def log_derivative(f, x, dx=1e-3):
     '''
@@ -18,6 +21,7 @@ def log_derivative(f, x, dx=1e-3):
     dlnx = log((x+hdx)/(x-hdx)) # Two-sided (is this necessary?)
     #dlnx = log(1.+dx/x) # Using this is probably fine; for dx<<x they are equal
     return dlnf/dlnx
+
 
 def gradient(f, x, dx=1e-3):
     '''
@@ -33,6 +37,33 @@ def gradient(f, x, dx=1e-3):
         hdx[i] = dx/2.
         df[i] = (f(x+hdx)-f(x-hdx))/dx
     return df
+
+
+def derivative_from_samples(x, xs, fs):
+    '''
+    Calculates the derivative of the function f(x) which is sampled as fs at values xs
+    Approximates the function as quadratic using the samples and Legendre polynomials
+    Args:
+        x: Point at which to calculate the derivative
+        xs: Sample locations
+        fs: Value of function at sample locations
+    '''
+    from mead_general import find_closest_index_value
+    from scipy.interpolate import lagrange
+    ix, _ = find_closest_index_value(xs, x)
+    if ix == 0:
+        (imin, imax) = (0, 1) if x < xs[0] else (0, 2)
+    elif ix == len(xs)-1:
+        nx = len(xs)
+        (imin, imax) = (nx-2, nx-1) if x > xs[-1] else (nx-3, nx-1)
+    else:
+        imin, imax = ix-1, ix+1
+    poly = lagrange(xs[imin:imax+1], fs[imin:imax+1])
+    return poly.deriv()(x)
+
+### ###
+
+### Integration ###
 
 def integrate_quad_log(func,a,b,\
                        args=(),\
@@ -68,6 +99,7 @@ def integrate_quad_log(func,a,b,\
                        limlst=limlst)
     return ans
 
+
 def integrate_rectangular(fx, x):
     '''
     A very simple rectangular integration that assumes equal sized bins
@@ -75,6 +107,7 @@ def integrate_rectangular(fx, x):
     '''
     dx = x[1]-x[0]
     return sum(fx)*dx
+
 
 def trapz2d(F, x, y):
     '''
@@ -86,3 +119,5 @@ def trapz2d(F, x, y):
     for iy, _ in enumerate(y):
         Fmid[iy] = trapz(F[:, iy], x)
     return trapz(Fmid, y)
+
+### ###
