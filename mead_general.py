@@ -187,7 +187,13 @@ def second_largest(numbers):
 
 ### This set of functions use numpy ###
 
-def arange(min, max, dtype=None):
+def is_array_monotonic(x:np.array):
+    '''
+    Returns True iff the array contains monotonically increasing values
+    '''
+    return np.all(np.diff(x) > 0.)
+
+def arange(min:float, max:float, dtype=None):
     '''
     Sensible arange function for producing integers from min to max inclusive
     I hate the inbuilt numpy one with such fury that it frightens me
@@ -195,7 +201,7 @@ def arange(min, max, dtype=None):
     '''
     return np.arange(min, max+1, dtype=dtype)#, like=like)
 
-def linspace_step(start, stop, step):
+def linspace_step(start:int, stop:int, step):
     '''
     Create a linear-spaced array going from start->stop (inclusive) via step
     The end point is included only if it falls exaclty on a step
