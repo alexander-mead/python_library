@@ -114,10 +114,8 @@ def trapz2d(F, x, y):
     Two-dimensional trapezium rule
     First integrates along x for each y, and then y
     '''
-    from numpy import zeros, trapz
-    Fmid = zeros((len(y)))
-    for iy, _ in enumerate(y):
-        Fmid[iy] = trapz(F[:, iy], x)
+    from numpy import trapz
+    Fmid = trapz(F, x)
     return trapz(Fmid, y)
 
 ### ###

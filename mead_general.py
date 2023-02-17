@@ -254,7 +254,7 @@ def print_array_attributes(x):
     print('shape:', x.shape)
     print('size:', x.size)
     print('dtype:', x.dtype)
-    print('')
+    print()
 
 def print_full_array(xs, title=None):
     '''
