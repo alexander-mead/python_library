@@ -187,13 +187,19 @@ def second_largest(numbers):
 
 ### This set of functions use numpy ###
 
-def is_array_monotonic(x:np.array):
+def is_array_monotonic(x:np.array) -> bool:
     '''
     Returns True iff the array contains monotonically increasing values
     '''
     return np.all(np.diff(x) > 0.)
 
-def arange(min:float, max:float, dtype=None):
+def is_array_linear(x:np.array, atol=1e-8) -> bool:
+    '''
+    Returns True iff the array is linearly spaced
+    '''
+    return np.isclose(np.all(np.diff(x)-np.diff(x)[0]), 0., atol=atol)
+
+def arange(min:float, max:float, dtype=None) -> np.ndarray:
     '''
     Sensible arange function for producing integers from min to max inclusive
     I hate the inbuilt numpy one with such fury that it frightens me
