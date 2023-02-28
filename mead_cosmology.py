@@ -518,8 +518,8 @@ class cosmology():
 
         # Linear scale
         plt.subplot(121)
-        plt.plot(a_lin, self.g(a_lin), 'b-', label = 'Growth function')
-        plt.plot(a_lin, self.f(a_lin), 'r-', label = 'Growth rate')
+        plt.plot(a_lin, self.g(a_lin), 'b-', label='Growth function')
+        plt.plot(a_lin, self.f(a_lin), 'r-', label='Growth rate')
         plt.legend()
         plt.xlabel(r'$a$')
         plt.xlim((0, 1.0))
