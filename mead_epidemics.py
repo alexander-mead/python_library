@@ -1,6 +1,7 @@
 # Third-party
 import numpy as np
 
+
 def _SIR_equations(t, y, R0, G0, f, m):
     '''
     Right-hand side of the SIR equations
@@ -14,27 +15,29 @@ def _SIR_equations(t, y, R0, G0, f, m):
     '''
     # Check size of problem (n should be divisible by 3)
     n3 = len(y)
-    if (n3%3 != 0):
+    if (n3 % 3 != 0):
         raise ValueError('Input array must be divisible by 3')
-    ng = n3//3 # Number of groups
+    ng = n3//3  # Number of groups
 
     # Unpack y variables
     # TODO: Replace slow loops?
-    S = np.zeros(ng); I = np.zeros(ng); R = np.zeros(ng)
+    S = np.zeros(ng)
+    I = np.zeros(ng)
+    R = np.zeros(ng)
     for ig in range(ng):
         S[ig] = y[0*(ng-1)+ig+0]
         I[ig] = y[1*(ng-1)+ig+1]
-        R[ig] = y[2*(ng-1)+ig+2] 
-    
+        R[ig] = y[2*(ng-1)+ig+2]
+
     # Equations
     # TODO: Replce slow loops?
     G = G0*R
     T = np.zeros(ng)
     for i in range(ng):
         for j in range(ng):
-            T[i] = T[i]+I[j]*f[j]*R0[j,i]*m[j,i]/f[i]
+            T[i] = T[i]+I[j]*f[j]*R0[j, i]*m[j, i]/f[i]
         T[i] = T[i]*S[i]
-    
+
     # Differential equations
     dS = -T+G
     dI = T-I
@@ -42,6 +45,7 @@ def _SIR_equations(t, y, R0, G0, f, m):
 
     # Return a list
     return dS.tolist()+dI.tolist()+dR.tolist()
+
 
 def _basic_SIR_equations(t, y, R0, G0=0., Vt=(lambda t, R: 0.)):
     '''
@@ -53,8 +57,10 @@ def _basic_SIR_equations(t, y, R0, G0=0., Vt=(lambda t, R: 0.)):
         G0 - Ratio of infected duration to recovered duration (usually << 1; 0 means lasting immunity)
     '''
     # Unpack y variables
-    S = y[0]; I = y[1]; R = y[2]
-    
+    S = y[0]
+    I = y[1]
+    R = y[2]
+
     # Differential equations
     if callable(R0):
         dS = -R0(t)*I*S+G0*R-Vt(t, R)
@@ -67,6 +73,7 @@ def _basic_SIR_equations(t, y, R0, G0=0., Vt=(lambda t, R: 0.)):
 
     # Return a list
     return [dS, dI, dR]
+
 
 def solve_basic_SIR(t, Ii, Ri, R0t, G0=0., Vt=(lambda t, R: 0.)):
     '''
@@ -87,18 +94,22 @@ def solve_basic_SIR(t, Ii, Ri, R0t, G0=0., Vt=(lambda t, R: 0.)):
     # Check that initial conditions are sensible
     for (Xi, name) in [(Si, 'susceptible'), (Ii, 'infected'), (Ri, 'recovered')]:
         if (Xi < 0. or Xi > 1.):
-            raise ValueError('Initial '+name+' fraction should be between zero and one')
+            raise ValueError(
+                'Initial '+name+' fraction should be between zero and one')
 
     # Run the ODE solver
-    solution = solve_ivp(_basic_SIR_equations, (t[0], t[-1]), [Si, Ii, Ri], 
-                            method='RK45', 
-                            t_eval=t, 
-                            args=(R0t, G0, Vt), 
-                        )
+    solution = solve_ivp(_basic_SIR_equations, (t[0], t[-1]), [Si, Ii, Ri],
+                         method='RK45',
+                         t_eval=t,
+                         args=(R0t, G0, Vt),
+                         )
 
     # Break solution down into SIR
-    S = solution.y[0]; I = solution.y[1]; R = solution.y[2]
+    S = solution.y[0]
+    I = solution.y[1]
+    R = solution.y[2]
     return (t, S, I, R)
+
 
 def solve_SIR(t, Ii, Ri, R0_matrix, G0, group_fracs, mixing_matrix):
     '''
@@ -114,12 +125,12 @@ def solve_SIR(t, Ii, Ri, R0_matrix, G0, group_fracs, mixing_matrix):
     '''
     from scipy.integrate import solve_ivp
     from mead_vectors import check_symmetric
-    
+
     # Parameters
-    eps = 1e-6 # Accuracy for unity checks
-    
+    eps = 1e-6  # Accuracy for unity checks
+
     # Array sizes
-    ng = len(Ii) # Number of groups
+    ng = len(Ii)  # Number of groups
     nt = len(t)  # Number of time steps
 
     # Check array sizes
@@ -128,7 +139,8 @@ def solve_SIR(t, Ii, Ri, R0_matrix, G0, group_fracs, mixing_matrix):
     if ng != len(R0_matrix[0, :]) or ng != len(R0_matrix[:, 0]):
         raise TypeError('R0 array should be square and the same size as y')
     if ng != len(mixing_matrix[0, :]) or ng != len(mixing_matrix[:, 0]):
-        raise TypeError('Mixing matrix should be square and the same size as y')
+        raise TypeError(
+            'Mixing matrix should be square and the same size as y')
 
     # Check matrix symmetry
     if not check_symmetric(R0_matrix):
@@ -151,23 +163,27 @@ def solve_SIR(t, Ii, Ri, R0_matrix, G0, group_fracs, mixing_matrix):
     # Check that initial conditions are sensible
     for (Xi, name) in [(Si, 'susceptible'), (Ii, 'infected'), (Ri, 'recovered')]:
         if (Xi.any() < 0. or Xi.any() > 1.):
-            raise ValueError('Initial '+name+' fraction should be between zero and one')
+            raise ValueError(
+                'Initial '+name+' fraction should be between zero and one')
 
     # Run the ODE solver
-    solution = solve_ivp(_SIR_equations, (t[0], t[-1]), Si.tolist()+Ii.tolist()+Ri.tolist(), 
-                            method='RK45', 
-                            t_eval=t, 
-                            args=(R0_matrix, G0, group_fracs, mixing_matrix), 
-                        )
+    solution = solve_ivp(_SIR_equations, (t[0], t[-1]), Si.tolist()+Ii.tolist()+Ri.tolist(),
+                         method='RK45',
+                         t_eval=t,
+                         args=(R0_matrix, G0, group_fracs, mixing_matrix),
+                         )
 
     # Break solution down into SIR
-    S = np.zeros((ng, nt)); I = np.zeros((ng, nt)); R = np.zeros((ng, nt))
+    S = np.zeros((ng, nt))
+    I = np.zeros((ng, nt))
+    R = np.zeros((ng, nt))
     for ig in range(ng):
         S[ig, :] = solution.y[0*(ng-1)+ig+0]
         I[ig, :] = solution.y[1*(ng-1)+ig+1]
         R[ig, :] = solution.y[2*(ng-1)+ig+2]
-            
+
     return (t, S, I, R)
+
 
 def solve_discrete_SIR(Si, Ii, Ri, R0, Ti, n):
     '''
@@ -185,10 +201,12 @@ def solve_discrete_SIR(Si, Ii, Ri, R0, Ti, n):
     S = np.zeros(n+1, dtype=int)
     I = np.zeros(n+1, dtype=int)
     R = np.zeros(n+1, dtype=int)
-    
+
     # Empty lists for solution
-    S[0] = Si; I[0] = Ii; R[0] = Ri
-   
+    S[0] = Si
+    I[0] = Ii
+    R[0] = Ri
+
     # Loop over steps and update
     for i in range(n):
         N = S[i]+I[i]+R[i]
@@ -200,6 +218,6 @@ def solve_discrete_SIR(Si, Ii, Ri, R0, Ti, n):
         S[i+1] = S[i]-new_infections
         I[i+1] = I[i]+new_infections-new_recoveries
         R[i+1] = R[i]+new_recoveries
-            
+
     # Return tuple of values at each time step
     return (S, I, R)

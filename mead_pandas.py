@@ -6,6 +6,7 @@ import seaborn as sns
 
 ### Basic ###
 
+
 def data_head(df, comment, verbose=False):
     '''
     Utility function for writing out subset of dataframe with comment
@@ -15,6 +16,7 @@ def data_head(df, comment, verbose=False):
         print(comment)
         print(df.head(15))
         print()
+
 
 def column_statistics(df, column, condition=None):
     '''
@@ -33,6 +35,7 @@ def column_statistics(df, column, condition=None):
     print('Standard deviation:', d.std())
     print()
 
+
 def unique_column_entries(df, column, max=15, normalize=False):
     '''
     Write out useful information about the number of unique entries in a column
@@ -43,6 +46,7 @@ def unique_column_entries(df, column, max=15, normalize=False):
         print(column, ':', number_of_different_entries)
         print(df[column].value_counts(dropna=False, normalize=normalize))
 
+
 def drop_column_name_prefix(df, prefix):
     '''
     Removes the 'prefix' from the column names of a dataframe
@@ -51,11 +55,13 @@ def drop_column_name_prefix(df, prefix):
     df.columns = df.columns.str.replace(prefix, '')
     return df
 
+
 def shuffle(df):
     '''
     Randomly shuffle the entry rows in a dataframe
     '''
     return df.sample(frac=1).reset_index(drop=True)
+
 
 def create_mock_classification_data(mus, sigs, ns, rseed=None, verbose=False):
     '''
@@ -76,27 +82,29 @@ def create_mock_classification_data(mus, sigs, ns, rseed=None, verbose=False):
         print('Total number of entries:', sum(ns))
         print()
     x = np.array([])
-    if rseed is not None: seed(rseed)
-    for i, (mu, sig, n) in enumerate(zip(mus, sigs, ns)): # mus, sigs, ns must be the same length
+    if rseed is not None:
+        seed(rseed)
+    for i, (mu, sig, n) in enumerate(zip(mus, sigs, ns)):  # mus, sigs, ns must be the same length
         if verbose:
-            print('Class %d members: %d'%(i, n))
+            print('Class %d members: %d' % (i, n))
             print('Mean:', mu)
             print('Standard deviation:', sig)
             print()
         y = multivariate_normal(mean=mu, cov=np.diag(sig), size=n)
-        if i==0:
+        if i == 0:
             x = y.copy()
         else:
             x = np.append(x, y, axis=0)
     labels = []
     for i, n in enumerate(ns):
-        labels += n*['c'+str(i)] # Label could be less boring than 'i'
+        labels += n*['c'+str(i)]  # Label could be less boring than 'i'
     data = {'class': labels}
     for i in range(len(ns)):
-        data['x%d'%(i+1)] = x[:, i]
+        data['x%d' % (i+1)] = x[:, i]
     df = pd.DataFrame.from_dict(data)
-    df = shuffle(df) # Shuffle entries
+    df = shuffle(df)  # Shuffle entries
     return df
+
 
 def nicely_melt(df, id_, columns, hue, var_name='var', value_name='value'):
     '''
@@ -121,18 +129,19 @@ def nicely_melt(df, id_, columns, hue, var_name='var', value_name='value'):
     else:
         new_columns = columns+id_vars
 
-    # Make the simple data frame, then melt it from wide form to long form, 
+    # Make the simple data frame, then melt it from wide form to long form,
     # then make swarmplot
     simple_df = df[new_columns]
-    df_melted = pd.melt(simple_df, id_vars=id_vars, value_vars=None, 
-                        var_name=var_name, 
+    df_melted = pd.melt(simple_df, id_vars=id_vars, value_vars=None,
+                        var_name=var_name,
                         value_name=value_name
-                       )
+                        )
     return df_melted
 
 ### ###
 
 ### Plotting helper functions ###
+
 
 def _add_jitter(values, std):
     '''
@@ -141,13 +150,15 @@ def _add_jitter(values, std):
     '''
     return values+np.random.normal(0., std, values.shape)
 
+
 def _calculate_minimum_difference(series):
     '''
     Calculate the minimum of the differences between values in a column
     '''
     arr = series.to_numpy()
     b = np.diff(np.sort(arr))
-    return b[b>0].min()
+    return b[b > 0].min()
+
 
 def _jitter_data(df, feature_row, feature_col, fsig):
     '''
@@ -163,24 +174,26 @@ def _jitter_data(df, feature_row, feature_col, fsig):
         data_col = _add_jitter(df[feature_col], std_col)
     return (data_row, data_col)
 
+
 def bootstrap_resample(df):
     '''
     Resamples a dataframe via the bootstrap method
     '''
-    df_bootstrap = df.sample(frac=1., replace=True, weights=None, 
-                             random_state=None, 
-                             axis=None, 
+    df_bootstrap = df.sample(frac=1., replace=True, weights=None,
+                             random_state=None,
+                             axis=None,
                              ignore_index=False,
-                            )
+                             )
     return df_bootstrap
 
 ### ###
 
 ### Plotting ###
 
-def plot_feature_triangle(df, features, hue_column, continuous_label=False, 
-        kde=True, figsize=(10,10), jitter=0., histograms=True, 
-        mask_upper_triangle=True, **kwargs):
+
+def plot_feature_triangle(df, features, hue_column, continuous_label=False,
+                          kde=True, figsize=(10, 10), jitter=0., histograms=True,
+                          mask_upper_triangle=True, **kwargs):
     '''
     Triangle plot of list of features split by some characteristic. 
     Histogram distributions along diagonal, correlations off diagonal.
@@ -217,51 +230,53 @@ def plot_feature_triangle(df, features, hue_column, continuous_label=False,
     i = 0
     for irow in range(n):
         for icol in range(n):
-            i += 1 # Add one to the plot number
+            i += 1  # Add one to the plot number
             plt.subplot(n, n, i)
-            feature_row = features[irow]; feature_col = features[icol]
+            feature_row = features[irow]
+            feature_col = features[icol]
             if icol > irow and mask_upper_triangle:
-                axs[irow, icol].axis('off') # Ignore upper triangle
+                axs[irow, icol].axis('off')  # Ignore upper triangle
                 continue
             elif (icol == irow):
-                sns.histplot(df, x=feature_col, 
-                                 hue=hue_hist, 
-                                 stat='density', 
-                                 bins='auto', 
-                                 legend=(not continuous_label and (icol==0)), 
-                                 kde=kde,
-                                )
+                sns.histplot(df, x=feature_col,
+                             hue=hue_hist,
+                             stat='density',
+                             bins='auto',
+                             legend=(not continuous_label and (icol == 0)),
+                             kde=kde,
+                             )
             else:
-                data_row, data_col = _jitter_data(df, feature_row, 
+                data_row, data_col = _jitter_data(df, feature_row,
                                                   feature_col, jitter)
                 sns.scatterplot(x=data_col, y=data_row,
                                 hue=hue_scat,
                                 legend=None,
                                 **kwargs,
-                               )
+                                )
             # x-axis labels
-            if irow == n-1: 
+            if irow == n-1:
                 plt.xlabel(feature_col)
             else:
                 plt.xlabel(None)
-                plt.tick_params(axis='x', which='major', 
+                plt.tick_params(axis='x', which='major',
                                 bottom=True, labelbottom=False)
 
             # y-axis labels
             if (icol == irow):
                 plt.ylabel(None)
-                plt.tick_params(axis='y', which='major', 
+                plt.tick_params(axis='y', which='major',
                                 left=False, labelleft=False)
             elif (icol == 0):
                 plt.ylabel(feature_row)
             else:
                 plt.ylabel(None)
-                plt.tick_params(axis='y', which='major', 
+                plt.tick_params(axis='y', which='major',
                                 left=True, labelleft=False)
-    #plt.tight_layout()
+    # plt.tight_layout()
 
-def plot_correlation_matrix(df, columns, figsize=(8,8), annot=True, errors=True, nbs=100,# fmt='.2g',
-        mask_diagonal=True, mask_upper_triangle=True):
+
+def plot_correlation_matrix(df, columns, figsize=(8, 8), annot=True, errors=True, nbs=100,  # fmt='.2g',
+                            mask_diagonal=True, mask_upper_triangle=True):
     '''
     Create a plot of the correlation matrix for (continous) data columns 
     (or features) of a dataframe (df)
@@ -277,29 +292,33 @@ def plot_correlation_matrix(df, columns, figsize=(8,8), annot=True, errors=True,
     '''
     # Calculate correlation coefficients
     corr = df[columns].corr()
-    if annot and errors: # Calculate errors via bootstrap
+    if annot and errors:  # Calculate errors via bootstrap
         std = _bootstrap_correlation_errors(df, columns, n=nbs)
         notes = []
-        for i in range(len(columns)): # Create annotations for heatmap
+        for i in range(len(columns)):  # Create annotations for heatmap
             note = []
-            for j in range(len(columns)): 
-                note.append('$%.2g \pm %.2g$'%(np.array(corr)[i, j], std[i, j]))
+            for j in range(len(columns)):
+                note.append('$%.2g \pm %.2g$' %
+                            (np.array(corr)[i, j], std[i, j]))
             notes.append(note)
         notes = pd.DataFrame(notes, index=corr.index, columns=corr.columns)
 
     # Apply mask
     if mask_diagonal and mask_upper_triangle:
         corr.drop(labels=columns[0], axis=0, inplace=True)  # Remove first row
-        corr.drop(labels=columns[-1], axis=1, inplace=True) # Remove last column
+        corr.drop(labels=columns[-1], axis=1,
+                  inplace=True)  # Remove last column
         if annot and errors:
-            notes.drop(labels=columns[0], axis=0, inplace=True)  # Remove first row
-            notes.drop(labels=columns[-1], axis=1, inplace=True) # Remove last column
+            notes.drop(labels=columns[0], axis=0,
+                       inplace=True)  # Remove first row
+            notes.drop(labels=columns[-1], axis=1,
+                       inplace=True)  # Remove last column
 
     # Create mask
-    mask = np.zeros_like(corr, dtype=bool) 
+    mask = np.zeros_like(corr, dtype=bool)
     if mask_upper_triangle and mask_diagonal:
         # k=1 does diagonal offset from centre
-        mask[np.triu_indices_from(mask, k=1)] = True 
+        mask[np.triu_indices_from(mask, k=1)] = True
     elif mask_upper_triangle:
         mask[np.triu_indices_from(mask, k=1)] = True
     elif mask_diagonal:
@@ -308,22 +327,23 @@ def plot_correlation_matrix(df, columns, figsize=(8,8), annot=True, errors=True,
     if annot and errors:
         fmt = ''
     else:
-        fmt='.2g'
+        fmt = '.2g'
         notes = annot
 
     # Make the plot
-    plt.style.use('seaborn-white') 
+    plt.style.use('seaborn-white')
     plt.figure(figsize=figsize)
     cmap = sns.diverging_palette(220, 10, as_cmap=True)
-    g = sns.heatmap(corr, vmin=-1., vmax=1., cmap=cmap, mask=mask, 
+    g = sns.heatmap(corr, vmin=-1., vmax=1., cmap=cmap, mask=mask,
                     linewidths=.5,
                     annot=notes,
                     fmt=fmt,
                     square=True,
                     cbar=False,
-                   )
+                    )
     # Centre y-axis ticks
-    g.set_yticklabels(labels=g.get_yticklabels(), va='center') 
+    g.set_yticklabels(labels=g.get_yticklabels(), va='center')
+
 
 def _bootstrap_correlation_errors(df, columns, n=100):
     '''
@@ -333,48 +353,52 @@ def _bootstrap_correlation_errors(df, columns, n=100):
         columns - Columns of dataframe to use
         n - Number of bootstrap realisations
     '''
-    corrs = [] # corrs will be a list of numpy arrays
+    corrs = []  # corrs will be a list of numpy arrays
     for _ in range(n):
-        df_boot = bootstrap_resample(df) # Resample each time
-        corr = np.array(df_boot[columns].corr()) # Convert to numpy
+        df_boot = bootstrap_resample(df)  # Resample each time
+        corr = np.array(df_boot[columns].corr())  # Convert to numpy
         corrs.append(corr)
-    std = np.std(corrs, axis=0) # Standard deviation
+    std = np.std(corrs, axis=0)  # Standard deviation
     return std
 
 ### Plotting ###
 
-def swarmplot(df, columns, id_=None, hue=None, hue_order=None, 
-    dodge=False, orient=None, color=None, palette=None, x_label='var', y_label='value',
-    size=5, edgecolor='gray', linewidth=0, ax=None, **kwargs):
+
+def swarmplot(df, columns, id_=None, hue=None, hue_order=None,
+              dodge=False, orient=None, color=None, palette=None, x_label='var', y_label='value',
+              size=5, edgecolor='gray', linewidth=0, ax=None, **kwargs):
     '''
     Version of swarmplot that takes as input a wide-format data frame
     Wide format is converted to long format (required for swarm plot) inside
     '''
-    df_melted = nicely_melt(df, id_, columns, hue, var_name=x_label, value_name=y_label)
-    sns.swarmplot(data=df_melted, x=x_label, y=y_label, hue=hue, order=None, 
-        hue_order=hue_order, dodge=dodge, orient=orient, color=color, palette=palette, 
-        size=size, edgecolor=edgecolor, linewidth=linewidth, ax=ax, **kwargs)
+    df_melted = nicely_melt(df, id_, columns, hue,
+                            var_name=x_label, value_name=y_label)
+    sns.swarmplot(data=df_melted, x=x_label, y=y_label, hue=hue, order=None,
+                  hue_order=hue_order, dodge=dodge, orient=orient, color=color, palette=palette,
+                  size=size, edgecolor=edgecolor, linewidth=linewidth, ax=ax, **kwargs)
 
-def lineswarm(df, columns, ax, line_color='black', line_alpha=0.1, id_=None, 
-    x_label='var', y_label='value', hue=None, hue_order=None, dodge=False, 
-    orient=None, color=None, palette=None, size=5, edgecolor='gray', linewidth=0, 
-    **kwargs):
+
+def lineswarm(df, columns, ax, line_color='black', line_alpha=0.1, id_=None,
+              x_label='var', y_label='value', hue=None, hue_order=None, dodge=False,
+              orient=None, color=None, palette=None, size=5, edgecolor='gray', linewidth=0,
+              **kwargs):
     '''
     Make a seaborn swarm plot with lines connecting the points in each swarm cluster
     Solution from: 
     https://stackoverflow.com/questions/51155396/plotting-colored-lines-connecting-individual-data-points-of-two-swarmplots
     '''
     # Make the standard swarm plot
-    swarmplot(df, columns, ax=ax, id_=id_, x_label=x_label, y_label=y_label, 
-        hue=hue, hue_order=hue_order, dodge=dodge, orient=orient, color=color, 
-        palette=palette, size=size, edgecolor=edgecolor, linewidth=linewidth, 
-        **kwargs)
+    swarmplot(df, columns, ax=ax, id_=id_, x_label=x_label, y_label=y_label,
+              hue=hue, hue_order=hue_order, dodge=dodge, orient=orient, color=color,
+              palette=palette, size=size, edgecolor=edgecolor, linewidth=linewidth,
+              **kwargs)
 
     # Now connect the dots
     # TODO: Automate this?
     # Find indices by inspecting the elements returned from ax.get_children()
     # Before plotting, we need to sort so that the data points are in order
-    locs = []; sort_idxs = []
+    locs = []
+    sort_idxs = []
     for idx, col in enumerate(columns):
         locs.append(ax.get_children()[idx].get_offsets())
         sort_idxs.append(np.argsort(df[col]))

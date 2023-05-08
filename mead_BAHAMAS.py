@@ -6,16 +6,22 @@ import numpy as np
 
 power_dir = '/Users/Mead/Physics/BAHAMAS/power'
 
+
 def power_file_name(mesh, model, snap, field_pair):
     # Measured BAHAMAS power spectra file names
     field1 = field_pair[0]
     field2 = field_pair[1]
-    file_name1 = power_dir+'/M'+str(mesh)+'/'+model+'_L400N1024_WMAP9_snap'+str(snap)+'_'+field1+'_'+field2+'_power.dat'
-    file_name2 = power_dir+'/M'+str(mesh)+'/'+model+'_L400N1024_WMAP9_snap'+str(snap)+'_'+field2+'_'+field1+'_power.dat'
+    file_name1 = power_dir+'/M' + \
+        str(mesh)+'/'+model+'_L400N1024_WMAP9_snap' + \
+        str(snap)+'_'+field1+'_'+field2+'_power.dat'
+    file_name2 = power_dir+'/M' + \
+        str(mesh)+'/'+model+'_L400N1024_WMAP9_snap' + \
+        str(snap)+'_'+field2+'_'+field1+'_power.dat'
     if os.path.isfile(file_name1):
         return file_name1
     else:
         return file_name2
+
 
 def error_file_name(mesh, snap, field_pair):
     # Measured BAHAMAS errors between different realisations of the AGN_TUNED_nu0 model
@@ -23,9 +29,11 @@ def error_file_name(mesh, snap, field_pair):
     field2 = field_pair[1]
     return power_dir+'/M'+str(mesh)+'/L400N1024_WMAP9_snap'+str(snap)+'_'+field1+'_'+field2+'_error.dat'
 
+
 def HMcode_file_name(mesh, snap):
     # Corresponding HMcode power file
-   return power_dir+'/M'+str(mesh)+'/HMcode/snap'+str(snap)+'_HMcode.dat'
+    return power_dir+'/M'+str(mesh)+'/HMcode/snap'+str(snap)+'_HMcode.dat'
+
 
 def z_to_snap(z):
     # Get the snapshot number corresponding to different BAHAMAS redshifts
@@ -56,6 +64,7 @@ def z_to_snap(z):
         raise ValueError('Snapshot not stored corresponding to this z')
     return snap
 
+
 def get_measured_power(mesh, model, z, field_pair, realisation_errors=False, correct_shot_noise=False):
 
     # Read a BAHAMAS power/error file and output k, power, error
@@ -85,24 +94,26 @@ def get_measured_power(mesh, model, z, field_pair, realisation_errors=False, cor
 
     return k, power, shot, modes, error
 
+
 def get_measured_response(mesh, model, z, field_pair):
 
     # Get the power from the hydro model
     k, power, _, _, _ = get_measured_power(mesh, model, z, field_pair,
-        realisation_errors=False,
-        correct_shot_noise=True,
-        )
+                                           realisation_errors=False,
+                                           correct_shot_noise=True,
+                                           )
 
     # Get the power from the DMONLY model
     dmonly_name = 'DMONLY_2fluid_nu0'
     _, dmonly, _, _, _ = get_measured_power(mesh, dmonly_name, z, field_pair=('all', 'all'),
-        realisation_errors=False,
-        correct_shot_noise=True,
-        )
+                                            realisation_errors=False,
+                                            correct_shot_noise=True,
+                                            )
 
     # Make the response
     response = power/dmonly
     return k, response
+
 
 def get_HMcode_power(mesh, z):
     snap = z_to_snap(z)
@@ -112,10 +123,11 @@ def get_HMcode_power(mesh, z):
     power = data[:, 1]
     return k, power
 
+
 def get_HMcode_corrected_power(mesh, model, z, field_pair, realisation_errors=False, correct_shot_noise=False):
-    _, _, shot, modes, error = get_measured_power(mesh, model, z, field_pair, realisation_errors, correct_shot_noise)
+    _, _, shot, modes, error = get_measured_power(
+        mesh, model, z, field_pair, realisation_errors, correct_shot_noise)
     _, response = get_measured_response(mesh, model, z, field_pair)
     k, power = get_HMcode_power(mesh, z)
     power = power*response
     return k, power, shot, modes, error
-

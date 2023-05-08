@@ -4,6 +4,7 @@ from scipy.integrate import quad
 
 ### Continuous probability distributions ###
 
+
 def normalisation(f, x1, x2, *args):
     '''
     Calculate the normalisation of a probability distribution via integration
@@ -14,13 +15,17 @@ def normalisation(f, x1, x2, *args):
     norm, _ = quad(lambda x: f(x, *args), x1, x2)
     return norm
 
+
 def cumulative(x, f, x1, *args):
     '''
     Compute the cumulative distribution function via integration
     '''
-    C, _ = quad(lambda x: f(x,*args), x1, x)
+    C, _ = quad(lambda x: f(x, *args), x1, x)
     return C
-cumulative = np.vectorize(cumulative) # Vectorise to work with array 'x'
+
+
+cumulative = np.vectorize(cumulative)  # Vectorise to work with array 'x'
+
 
 def draw_from_distribution(x, Cx):
     '''
@@ -31,6 +36,7 @@ def draw_from_distribution(x, Cx):
     r = np.random.uniform(Cx[0], Cx[-1])
     xi = np.interp(r, Cx, x)
     return xi
+
 
 def moment(n, f, x1, x2, *args):
     '''
@@ -44,11 +50,13 @@ def moment(n, f, x1, x2, *args):
     m, _ = quad(lambda x: (x**n)*f(x, *args)/norm, x1, x2)
     return m
 
+
 def mean(f, x1, x2, *args):
     '''
     Computes the mean of a continuous distribution via integration
     '''
     return moment(1, f, x1, x2, *args)
+
 
 def variance(f, x1, x2, *args):
     '''
@@ -61,6 +69,7 @@ def variance(f, x1, x2, *args):
 ### ###
 
 ### Drawing random numbers from continuous distributions ###
+
 
 def draw_from_1D(n, f, x1, x2, nx, *args):
     '''
@@ -76,6 +85,7 @@ def draw_from_1D(n, f, x1, x2, nx, *args):
     for i in range(n):
         xi[i] = draw_from_distribution(x, C)
     return xi
+
 
 def draw_from_2D(n, f, x1, x2, nx, y1, y2, ny):
     '''
@@ -96,22 +106,23 @@ def draw_from_2D(n, f, x1, x2, nx, y1, y2, ny):
 
     # Make a grid of xy coordinate pairs
     xy = np.array(np.meshgrid(x, y))
-    xy = xy.reshape(2, nx*ny) # Reshape the grid (2 here coresponds to 2 coordinates: x, y)
-    xy = np.transpose(xy).tolist() # Convert to a long list
-    
+    # Reshape the grid (2 here coresponds to 2 coordinates: x, y)
+    xy = xy.reshape(2, nx*ny)
+    xy = np.transpose(xy).tolist()  # Convert to a long list
+
     # Make array of function values corresponding to the xy coordinates
     X, Y = np.meshgrid(x, y)
     z = f(X, Y)      # Array of function values
-    z = z.flatten() # Flatten array to create a long list of function values
+    z = z.flatten()  # Flatten array to create a long list of function values
     z = z/sum(z)    # Force normalisation
 
     # Make a list of integers linking xy coordiantes to function values
-    i = list(range(z.size)) 
+    i = list(range(z.size))
 
     # Make the random choices with probabilties proportional to the function value
     # The integer chosen by this can then be matched to the xy coordiantes
-    j = np.random.choice(i,n,replace=True,p=z) 
-    
+    j = np.random.choice(i, n, replace=True, p=z)
+
     # Now match the integers to the xy coordinates
     xs = []
     ys = []
@@ -127,12 +138,13 @@ def draw_from_2D(n, f, x1, x2, nx, y1, y2, ny):
     # Apply uniform-random displacement within a pixel
     xs = xs+dxs
     ys = ys+dys
-        
+
     return xs, ys
 
 ### ###
 
 ### Other ###
+
 
 def correlation_matrix(cov):
     '''
@@ -143,16 +155,17 @@ def correlation_matrix(cov):
     if n != shape[1]:
         raise TypeError('Input covariance matrix must be square')
     cor = np.empty_like(cov)
-    
+
     for i in range(n):
         for j in range(n):
-            cor[i, j] = cov[i, j]/np.sqrt(cov[i, i]*cov[j, j]) 
-            
+            cor[i, j] = cov[i, j]/np.sqrt(cov[i, i]*cov[j, j])
+
     return cor
 
 ### ###
 
 ### Integer distributions ###
+
 
 def central_condition_Poisson(n, lam, p):
     '''
@@ -166,6 +179,7 @@ def central_condition_Poisson(n, lam, p):
     PMF = np.where(n == 0, p*PMF+1.-p, p*PMF)
     return PMF
 
+
 def expectation_integer_distribution(p, f, nmax, *args):
     '''
     The expectation value of some function of an integer probability distribuion
@@ -178,6 +192,7 @@ def expectation_integer_distribution(p, f, nmax, *args):
     ps = p(ns, *args)
     return np.sum(f(ns)*ps)
 
+
 def moment_integer_distribution(p, pow, nmax, *args):
     '''
     Compute the moment of an integer distribution via direct summation
@@ -188,6 +203,7 @@ def moment_integer_distribution(p, pow, nmax, *args):
     '''
     return expectation_integer_distribution(p, lambda n: n**pow, nmax, *args)
 
+
 def sum_integer_distribution(p, nmax, *args):
     '''
     Compute the sum of probabilities for integer distribution via direct summation (should be unity)
@@ -197,6 +213,7 @@ def sum_integer_distribution(p, nmax, *args):
     '''
     return moment_integer_distribution(p, 0, nmax, *args)
 
+
 def mean_integer_distribution(p, nmax, *args):
     '''
     Compute the mean value of an integer distribution via direct summation
@@ -205,6 +222,7 @@ def mean_integer_distribution(p, nmax, *args):
     *args: to be passed to p(n, *args)
     '''
     return moment_integer_distribution(p, 1, nmax, *args)
+
 
 def variance_integer_distribution(p, nmax, *args):
     '''
@@ -221,6 +239,7 @@ def variance_integer_distribution(p, nmax, *args):
 
 ### MCMC ###
 
+
 def Gibbs_sampling(conditionals, start, n_chains=5, n_points=int(1e3), burn_frac=0.5):
     '''
     Simple Gibbs sampling with m chains of length n
@@ -236,7 +255,8 @@ def Gibbs_sampling(conditionals, start, n_chains=5, n_points=int(1e3), burn_frac
     '''
     chains = []
     for _ in range(n_chains):
-        x = start; xs = []
+        x = start
+        xs = []
         for _ in range(n_points):
             for i, conditional in enumerate(conditionals):
                 x[i] = conditional(x)
@@ -244,6 +264,7 @@ def Gibbs_sampling(conditionals, start, n_chains=5, n_points=int(1e3), burn_frac
         chains.append(np.array(xs))
     chains = burn_chains(chains, burn_frac=burn_frac)
     return chains
+
 
 def MCMC_sampling(proposal, f, start, n_chains=5, n_points=int(1e3), burn_frac=0.5):
     '''
@@ -257,20 +278,25 @@ def MCMC_sampling(proposal, f, start, n_chains=5, n_points=int(1e3), burn_frac=0
     '''
     chains = []
     for _ in range(n_chains):
-        x = np.copy(start); p = f(x)
-        xs = []; x_old = x; p_old = p
+        x = np.copy(start)
+        p = f(x)
+        xs = []
+        x_old = x
+        p_old = p
         for _ in range(n_points):
             x_new = proposal(x_old)            # Sample from the proposal
             p_new = f(x_new)                   # New probability
             acceptance = min(p_new/p_old, 1)   # Acceptance probability
-            accept = np.random.uniform(0., 1.) # Accept or reject
+            accept = np.random.uniform(0., 1.)  # Accept or reject
             if accept < acceptance:
-                x_old = x_new; p_old = p_new
-            #if x_old != start: xs.append(x_old) # Avoid adding the first sample?
+                x_old = x_new
+                p_old = p_new
+            # if x_old != start: xs.append(x_old) # Avoid adding the first sample?
             xs.append(x_old)
         chains.append(np.array(xs))
     chains = burn_chains(chains, burn_frac=burn_frac)
     return chains
+
 
 def HMC_sampling(lnf, dlnf, start, n_chains=5, n_points=int(1e3), burn_frac=0.5, M=1., dt=0.1, T=1., debug=False, verbose=False):
     '''
@@ -291,12 +317,14 @@ def HMC_sampling(lnf, dlnf, start, n_chains=5, n_points=int(1e3), burn_frac=0.5,
         x_full = x+p_half*dt/M
         p_full = p_half+0.5*dlnf(x_full)*dt
         return x_full, p_full
+
     def leap_frog_integration(x_init, p_init, dlnf, M, dt, T):
         N_steps = int(T/dt)
         x, p = np.copy(x_init), np.copy(p_init)
         for _ in range(N_steps):
             x, p = leap_frog_step(x, p, dlnf, M, dt)
         return x, p
+
     def Hamiltonian(x, p, lnf, M):
         T = 0.5*np.dot(p, p)/M
         V = -lnf(x)
@@ -304,24 +332,38 @@ def HMC_sampling(lnf, dlnf, start, n_chains=5, n_points=int(1e3), burn_frac=0.5,
     # MCMC step
     chains = []
     for j in range(n_chains):
-        x_old = np.copy(start); xs = []; n_accepted = 0
+        x_old = np.copy(start)
+        xs = []
+        n_accepted = 0
         for i in range(n_points):
-            p_old = np.random.normal(0., 1., size=x_old.size) # Randomize momentum each go
-            if i == 0: H_old = 0.
-            if debug: print('Prev sample:', i, x_old, p_old, H_old)
+            # Randomize momentum each go
+            p_old = np.random.normal(0., 1., size=x_old.size)
+            if i == 0:
+                H_old = 0.
+            if debug:
+                print('Prev sample:', i, x_old, p_old, H_old)
             x_new, p_new = leap_frog_integration(x_old, p_old, dlnf, M, dt, T)
             H_new = Hamiltonian(x_new, p_new, lnf, M)
-            if debug: print('Next sample:', i, x_new, p_new, H_new)
+            if debug:
+                print('Next sample:', i, x_new, p_new, H_new)
             acceptance = 1. if (i == 0) else min(np.exp(H_old-H_new), 1)
-            accept = np.random.uniform(0., 1.) < acceptance # Accept or reject
-            if debug: print('Acceptance:', acceptance, accept)
-            if accept: x_old = x_new; H_old = H_new; n_accepted += 1
+            accept = np.random.uniform(0., 1.) < acceptance  # Accept or reject
+            if debug:
+                print('Acceptance:', acceptance, accept)
+            if accept:
+                x_old = x_new
+                H_old = H_new
+                n_accepted += 1
             xs.append(x_old)
         chains.append(np.array(xs))
-        if verbose: print('Chain: %d; acceptance fraction: %1.2f'%(j, n_accepted/n_points))
+        if verbose:
+            print('Chain: %d; acceptance fraction: %1.2f' %
+                  (j, n_accepted/n_points))
     chains = burn_chains(chains, burn_frac=burn_frac)
-    if debug: exit()
+    if debug:
+        exit()
     return chains
+
 
 def HMC_sampling_torch(lnf, start, n_chains=5, n_points=int(1e3), burn_frac=0.5, M=1., dt=0.1, T=1., verbose=False):
     '''
@@ -337,6 +379,7 @@ def HMC_sampling_torch(lnf, start, n_chains=5, n_points=int(1e3), burn_frac=0.5,
     '''
     import torch as tc
     # Functions for leap-frog integration
+
     def get_gradient(x, lnf):
         x = x.detach()
         x.requires_grad_()
@@ -344,11 +387,13 @@ def HMC_sampling_torch(lnf, start, n_chains=5, n_points=int(1e3), burn_frac=0.5,
         dlnfx = x.grad
         x = x.detach()
         return dlnfx
+
     def forward_Euler_step(x, p, lnf, M, dt):
         dlnfx = get_gradient(x, lnf)
         x_full = x+p*dt/M
         p_full = p+dlnfx*dt
         return x_full, p_full
+
     def leap_frog_step(x, p, lnf, M, dt):
         dlnfx = get_gradient(x, lnf)
         p_half = p+0.5*dlnfx*dt
@@ -356,34 +401,47 @@ def HMC_sampling_torch(lnf, start, n_chains=5, n_points=int(1e3), burn_frac=0.5,
         dlnfx = get_gradient(x_full, lnf)
         p_full = p_half+0.5*dlnfx*dt
         return x_full, p_full
+
     def leap_frog_integration(x_init, p_init, lnf, M, dt, T, method='leap-frog'):
         N_steps = int(T/dt)
         x, p = tc.clone(x_init), tc.clone(p_init)
-        step = leap_frog_step if method=='leap-frog' else forward_Euler_step
+        step = leap_frog_step if method == 'leap-frog' else forward_Euler_step
         for _ in range(N_steps):
             x, p = step(x, p, lnf, M, dt)
         return x, p
+
     def Hamiltonian(x, p, lnf, M):
         T = 0.5*tc.dot(p, p)/M
         V = -lnf(x)
         return T+V
     # MCMC step
-    chains = []; n = len(start)
+    chains = []
+    n = len(start)
     for j in range(n_chains):
-        x_old = tc.clone(start); xs = []; n_accepted = 0
+        x_old = tc.clone(start)
+        xs = []
+        n_accepted = 0
         for i in range(n_points):
             p_old = tc.normal(0., 1., size=(n,))
-            if i == 0: H_old = 0.
+            if i == 0:
+                H_old = 0.
             x_new, p_new = leap_frog_integration(x_old, p_old, lnf, M, dt, T)
             H_new = Hamiltonian(x_new, p_new, lnf, M)
-            acceptance = 1. if (i == 0) else min(tc.exp(H_old-H_new), 1.) # Acceptance probability
+            acceptance = 1. if (i == 0) else min(
+                tc.exp(H_old-H_new), 1.)  # Acceptance probability
             accept = tc.rand((1,)) < acceptance
-            if accept: x_old = x_new; H_old = H_new; n_accepted += 1
+            if accept:
+                x_old = x_new
+                H_old = H_new
+                n_accepted += 1
             xs.append(x_old)
         chains.append(tc.stack(xs))
-        if verbose: print('Chain: %d; acceptance fraction: %1.2f'%(j, n_accepted/n_points))
+        if verbose:
+            print('Chain: %d; acceptance fraction: %1.2f' %
+                  (j, n_accepted/n_points))
         chains = burn_chains(chains, burn_frac=burn_frac)
     return chains
+
 
 def burn_chains(chains, burn_frac=0.5):
     '''
@@ -393,13 +451,15 @@ def burn_chains(chains, burn_frac=0.5):
     burned_chains = [chain[int(n*burn_frac):] for chain in chains]
     return burned_chains
 
+
 def Gelman_Rubin_statistic(chains, verbose=False):
     '''
     Calculate the Gelman-Rubin statistic
     chains: A list of equal-length MCMC chains
     '''
     # Initial information
-    m = len(chains); n = len(chains[0])
+    m = len(chains)
+    n = len(chains[0])
     d = 1 if (len(chains[0].shape) == 1) else chains[0].shape[1]
     if verbose:
         print('Number of chains:', m)
@@ -407,21 +467,28 @@ def Gelman_Rubin_statistic(chains, verbose=False):
         print('Chain lengths:', n)
 
     # Calculate the mean and variance for each chain
-    chain_means = []; chain_variances = []
+    chain_means = []
+    chain_variances = []
     for i, chain in enumerate(chains):
-        if len(chain) != n: raise ValueError('All chains must be the same length')
+        if len(chain) != n:
+            raise ValueError('All chains must be the same length')
         chain_mean = chain.mean(axis=0)       # Sample mean of chain i
-        chain_var = chain.var(axis=0, ddof=1) # Sample variance of chain i
-        if verbose: print('Chain:', i, 'mean:', chain_mean, 'variance:', chain_var)
-        chain_means.append(chain_mean); chain_variances.append(chain_var)
-    chain_means = np.array(chain_means); chain_variances = np.array(chain_variances)
+        chain_var = chain.var(axis=0, ddof=1)  # Sample variance of chain i
+        if verbose:
+            print('Chain:', i, 'mean:', chain_mean, 'variance:', chain_var)
+        chain_means.append(chain_mean)
+        chain_variances.append(chain_var)
+    chain_means = np.array(chain_means)
+    chain_variances = np.array(chain_variances)
 
     # Calculate the intra-chain variances; this is s^2; underestimates variance
-    B = n* np.atleast_1d(chain_means).var(axis=0, ddof=1) # Sample variance of sample means from chains
+    # Sample variance of sample means from chains
+    B = n * np.atleast_1d(chain_means).var(axis=0, ddof=1)
     overall_variance = np.atleast_1d(chain_variances).mean(axis=0)
-    sigma2_hat = overall_variance*(n-1)/n+B/n # This overestimates variance
+    sigma2_hat = overall_variance*(n-1)/n+B/n  # This overestimates variance
     R = np.sqrt(sigma2_hat/overall_variance)  # Gelman-Rubin statistic
-    if verbose: print('Gelman-Rubin statistics:', R)
+    if verbose:
+        print('Gelman-Rubin statistics:', R)
     return R
 
 ### ###

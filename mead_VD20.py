@@ -1,11 +1,13 @@
 # Third-party imports
 import numpy as np
 
+
 def get_power(name, z):
 
     k, zs, Pks = get_powers(name)
     i = np.where(zs == z)
-    return k, Pks[:,i[0]]
+    return k, Pks[:, i[0]]
+
 
 def get_powers(name):
 
@@ -13,19 +15,22 @@ def get_powers(name):
     infile = indir+'/'+name+'.dat'
     data = np.loadtxt(infile)
 
-    nz = 15; nk = 352
+    nz = 15
+    nk = 352
 
     z = np.unique(data[:, 0])
     k = np.unique(data[:, 1])
-    Pk = np.swapaxes(data[:,3].reshape(nz, nk), 0, 1)
+    Pk = np.swapaxes(data[:, 3].reshape(nz, nk), 0, 1)
     z = np.flip(z)
     return k, z, Pk
+
 
 def get_response(name, z):
 
     k, zs, Rks = get_responses(name)
-    i = np.where(zs == z) # TODO: index?
+    i = np.where(zs == z)  # TODO: index?
     return k, Rks[:, i[0]]
+
 
 def get_responses(name):
 
@@ -33,6 +38,7 @@ def get_responses(name):
     name_dmonly = dmonly_counterpart(name)
     k, z, Pk_dmonly = get_powers(name_dmonly)
     return k, z, Pk/Pk_dmonly
+
 
 def dmonly_counterpart(name):
 
@@ -63,5 +69,5 @@ def dmonly_counterpart(name):
         'C-OWLS_AGN_Theat8.7_WMAP7': 'DMONLY_WMAP7_L400N1024',
         'C-OWLS_NOCOOL_UVB_WMAP7': 'DMONLY_WMAP7_L400N1024',
         'C-OWLS_REF_WMAP7': 'DMONLY_WMAP7_L400N1024',
-        }
+    }
     return match[name]

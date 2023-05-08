@@ -2,21 +2,24 @@
 import numpy as np
 
 # Parameters
-xmin_Tk = 1e-5 # Below this value a Taylor expansion is used
+xmin_Tk = 1e-5  # Below this value a Taylor expansion is used
+
 
 def Tophat_k(x):
     '''
     Normalised tophat Fourier transform function such that T(x=0)=1
     '''
     xmin = xmin_Tk
-    return np.where(np.abs(x)<xmin, 1.-x**2/10., (3./x**3)*(np.sin(x)-x*np.cos(x)))
+    return np.where(np.abs(x) < xmin, 1.-x**2/10., (3./x**3)*(np.sin(x)-x*np.cos(x)))
+
 
 def dTophat_k(x):
     '''
     Derivative of the tophat Fourier transform function
     '''
     xmin = xmin_Tk
-    return np.where(np.abs(x)<xmin, -x/5.+x**3/70., (3./x**4)*((x**2-3.)*np.sin(x)+3.*x*np.cos(x)))
+    return np.where(np.abs(x) < xmin, -x/5.+x**3/70., (3./x**4)*((x**2-3.)*np.sin(x)+3.*x*np.cos(x)))
+
 
 def Gaussian(x, mu, sig):
     '''
@@ -27,6 +30,7 @@ def Gaussian(x, mu, sig):
         sig - standard deviation
     '''
     return np.exp(-(x-mu)**2/(2.*sig**2))
+
 
 def Gaussian_distribution(x, mu, sig):
     '''
@@ -40,6 +44,7 @@ def Gaussian_distribution(x, mu, sig):
     A = 1./(sig*np.sqrt(2.*np.pi))
     return A*Gaussian(x, mu, sig)
 
+
 def Poisson_distribution(n, mu):
     '''
     Normalised Poisson distribution
@@ -50,12 +55,14 @@ def Poisson_distribution(n, mu):
     from scipy.special import gamma
     return (mu**n)*np.exp(-mu)/gamma(n+1)
 
+
 def KroneckerDelta(x1, x2):
     '''
     Kronecker delta function
     TODO: What about np.linalg.kron?
     '''
-    return np.where(x1==x2, 1, 0)
+    return np.where(x1 == x2, 1, 0)
+
 
 def logn(x, n):
     '''

@@ -14,10 +14,12 @@ AW10_future_punishment = 1e6
 # Mead cosmology class, roughly analagous to that I use in Fortran
 # TODO: Normalisation As vs. sigma_8 etc.
 # TODO: How to include power spectra. Should I even do this? Probably I should use CAMB instead.
+
+
 class cosmology():
 
-    def __init__(self, Om_m=0.3, Om_b=0.05, Om_w=0.7, h=0.7, ns=0.96, As=1.97448e-9, 
-                       m_nu=0., w=-1., wa=0., neff=3.046, YH=0.76, Tcmb=2.725, Nnu=3):
+    def __init__(self, Om_m=0.3, Om_b=0.05, Om_w=0.7, h=0.7, ns=0.96, As=1.97448e-9,
+                 m_nu=0., w=-1., wa=0., neff=3.046, YH=0.76, Tcmb=2.725, Nnu=3):
 
         # Primary parameters
         self.Om_m = Om_m
@@ -26,7 +28,7 @@ class cosmology():
         self.h = h
         self.ns = ns
         self.As = As
-        #self.sig8 = 0.8
+        # self.sig8 = 0.8
         self.m_nu = m_nu
         self.w = w
         self.wa = wa
@@ -49,7 +51,7 @@ class cosmology():
         # 5 - IDE II
         self.ide = 2
 
-        # Derived parameters 
+        # Derived parameters
 
         # Remaining matter Omegas and omegas
         self.w_m = self.Om_m*self.h**2
@@ -58,9 +60,9 @@ class cosmology():
         self.Om_nu = self.w_nu/self.h**2
         self.Om_c = self.Om_m-self.Om_b-self.Om_nu
         self.w_c = self.Om_c*self.h**2
-        
+
         # Radiation
-        self.Om_r = 0. # TODO: Fix radiation properly
+        self.Om_r = 0.  # TODO: Fix radiation properly
 
         # Total matter and curvature
         self.Om = self.Om_m+self.Om_w+self.Om_v+self.Om_r
@@ -108,12 +110,12 @@ class cosmology():
 
         from scipy.interpolate import interp1d
 
-        #global r_tab, t_tab, rp_tab
-        #global r, t, rp
-        #global r0, t0
+        # global r_tab, t_tab, rp_tab
+        # global r, t, rp
+        # global r0, t0
 
         # A small number
-        small=0.
+        small = 0.
 
         # a values for interpolation
         amin = 1e-5
@@ -161,15 +163,17 @@ class cosmology():
         t_tab = t_integrate_vec(a_tab)
 
         # Add in values r(a=0) and t(a=0) if the 'nonzero' table has been used
-        #r_tab=np.insert(r_tab,0,0.)
-        #t_tab=np.insert(t_tab,0,0.)
+        # r_tab=np.insert(r_tab,0,0.)
+        # t_tab=np.insert(t_tab,0,0.)
 
         # Interpolaton function for r(a)
-        r_func = interp1d(a_tab, r_tab, kind='cubic', fill_value='extrapolate') #This needs to be linear, not log
+        # This needs to be linear, not log
+        r_func = interp1d(a_tab, r_tab, kind='cubic', fill_value='extrapolate')
+
         def r_vectorize(a):
-            if(a <= small):
+            if (a <= small):
                 return rp_integrate(1.)
-            elif(a > 1.):
+            elif (a > 1.):
                 print('Error, r(a>1) called:', a)
                 return None
             else:
@@ -177,11 +181,13 @@ class cosmology():
         self.r = np.vectorize(r_vectorize)
 
         # Interpolaton function for rp(a)
-        rp_func = interpolate.log_interp1d(a_tab, rp_tab, kind='cubic', fill_value='extrapolate')
+        rp_func = interpolate.log_interp1d(
+            a_tab, rp_tab, kind='cubic', fill_value='extrapolate')
+
         def rp_vectorize(a):
-            if(a <= small):
+            if (a <= small):
                 return 0.
-            elif(a > 1.):
+            elif (a > 1.):
                 print('Error, rp(a>1) called:', a)
                 return None
             else:
@@ -189,23 +195,27 @@ class cosmology():
         self.rp = np.vectorize(rp_vectorize)
 
         # Interpolaton function for t(a)
-        t_func = interpolate.log_interp1d(a_tab, t_tab, kind='cubic', fill_value='extrapolate')
+        t_func = interpolate.log_interp1d(
+            a_tab, t_tab, kind='cubic', fill_value='extrapolate')
+
         def t_vectorize(a):
-            if(a <= small):
+            if (a <= small):
                 return 0.
-            elif(a > 1.):
+            elif (a > 1.):
                 print('Error, t(a>1) called:', a)
                 return None
-            else:        
+            else:
                 return t_func(a)
         self.t = np.vectorize(t_vectorize)
 
         r0 = self.rp(1.)
         t0 = self.t(1.)
         print('Initialise_distances: Horizon size [dimensionless]:', r0)
-        print('Initialise_distances: Horizon size [Mpc/h]:', const.Hdist_cos*r0)
+        print(
+            'Initialise_distances: Horizon size [Mpc/h]:', const.Hdist_cos*r0)
         print('Initialise_distances: Universe age [dimensionless]:', t0)
-        print('Initialise_distances: Universe age [Gyr/h]:', const.Htime_cos*t0)
+        print(
+            'Initialise_distances: Universe age [Gyr/h]:', const.Htime_cos*t0)
         print('Initialise_distances: r(0):',  self.r(0.))
         print('Initialise_distances: rp(0):', self.rp(0.))
         print('Initialise_distances: t(0):',  self.t(0.))
@@ -226,7 +236,7 @@ class cosmology():
         a_tab = mead.logspace(amin, amax, na)
 
         # Set initial conditions for the ODE integration
-        #d_init = a_lintab_nozero[0]
+        # d_init = a_lintab_nozero[0]
         d_init = amin
         v_init = 1.
 
@@ -238,28 +248,30 @@ class cosmology():
         # Function to get delta' and v' in the correct format for odeint
         # Note that it returns [v',delta'] in the 'wrong' order
         def dv(X, t):
-            return [X[1], dd(X[1], X[0], t)]   
+            return [X[1], dd(X[1], X[0], t)]
 
         # Use odeint to get g(a) and f(a) = d ln(g)/d ln(a)
-        #gv=odeint(dv,[d_init,v_init],a_lintab_nozero)
-        gv = odeint(dv, [d_init,v_init], a_tab)
+        # gv=odeint(dv,[d_init,v_init],a_lintab_nozero)
+        gv = odeint(dv, [d_init, v_init], a_tab)
         g_tab = gv[:, 0]
         f_tab = a_tab*gv[:, 1]/gv[:, 0]
 
         print('Initialise_growth: ODE solved')
 
         # Add in the values g(a=0) and f(a=0) if using the 'nonzero' tab
-        #g_tab=np.insert(g_tab,0,0.)
-        #f_tab=np.insert(f_tab,0,1.)
+        # g_tab=np.insert(g_tab,0,0.)
+        # f_tab=np.insert(f_tab,0,1.)
 
         print('Initialise_growth: Creating interpolators')
 
         # Create interpolation function for g(a)
-        g_func = interpolate.log_interp1d(a_tab, g_tab, kind='cubic', fill_value='extrapolate')
+        g_func = interpolate.log_interp1d(
+            a_tab, g_tab, kind='cubic', fill_value='extrapolate')
+
         def g_vectorize(a):
-            if(a < amin):
+            if (a < amin):
                 return a
-            elif(a > 1.):
+            elif (a > 1.):
                 print('Error, g(a>1) called:', a)
                 return None
             else:
@@ -267,14 +279,16 @@ class cosmology():
         self.g = np.vectorize(g_vectorize)
 
         # Create interpolation function for f(a) = dln(g)/dln(a)
-        f_func = interpolate.log_interp1d(a_tab, f_tab, kind='cubic', fill_value='extrapolate')
+        f_func = interpolate.log_interp1d(
+            a_tab, f_tab, kind='cubic', fill_value='extrapolate')
+
         def f_vectorize(a):
-            if(a < amin):
+            if (a < amin):
                 return 1.
-            elif(a > 1.):
+            elif (a > 1.):
                 print('Error, f(a>1) called:', a)
                 return None
-            else:       
+            else:
                 return f_func(a)
         self.f = np.vectorize(f_vectorize)
 
@@ -297,7 +311,8 @@ class cosmology():
         '''
         Squared Hubble parameter, $(\dot{a}/a)^2$, normalised to unity at a=1
         '''
-        H2=(self.Om_r*a**-4)+(self.Om_m*a**-3)+self.Om_w*self.X_de(a)+self.Om_v+(1.-self.Om)*a**-2
+        H2 = (self.Om_r*a**-4)+(self.Om_m*a**-3)+self.Om_w * \
+            self.X_de(a)+self.Om_v+(1.-self.Om)*a**-2
         return H2
 
     def H(self, a):
@@ -310,24 +325,25 @@ class cosmology():
         '''
         Acceleration parameter, $\ddot{a}/a$ normalised to unity at a=1
         '''
-        AH=-0.5*((2.*self.Om_r*a**-4)+(self.Om_m*a**-3)+self.Om_w*(1.+3*self.w_de(a)*self.X_de(a))-2.*self.Om_v)
+        AH = -0.5*((2.*self.Om_r*a**-4)+(self.Om_m*a**-3)+self.Om_w *
+                   (1.+3*self.w_de(a)*self.X_de(a))-2.*self.Om_v)
         return AH
 
     def X_de(self, a):
         '''
         Dark energy energy density, normalised to unity at a=1
         '''
-        if(self.ide == 0):
-            return np.full_like(a, 1.) # Make numpy compatible
-        if(self.ide == 1):
+        if (self.ide == 0):
+            return np.full_like(a, 1.)  # Make numpy compatible
+        if (self.ide == 1):
             return a**(-3.*(1.+self.w+self.wa))*np.exp(-3.*self.wa*(1.-a))
-        elif(self.ide == 2):
+        elif (self.ide == 2):
             return a**(-3.*(1.+self.w))
-        elif(self.ide == 5):
-            f1=(a/self.a1)**self.nw+1.
-            f2=(1./self.a1)**self.nw+1.
-            f3=(1./self.a2)**self.nw+1.
-            f4=(a/self.a2)**self.nw+1.
+        elif (self.ide == 5):
+            f1 = (a/self.a1)**self.nw+1.
+            f2 = (1./self.a1)**self.nw+1.
+            f3 = (1./self.a2)**self.nw+1.
+            f4 = (a/self.a2)**self.nw+1.
             return ((f1/f2)*(f3/f4))**(-6./self.nw)
         else:
             raise ValueError('ide not recognised')
@@ -336,17 +352,17 @@ class cosmology():
         '''
         Dark energy equation of state parameter: w = p/rho
         '''
-        if(self.ide == 0):
-            return np.full_like(a, -1.) # Make numpy compatible
-        elif(self.ide == 1):
+        if (self.ide == 0):
+            return np.full_like(a, -1.)  # Make numpy compatible
+        elif (self.ide == 1):
             return self.w+(1.-a)*self.wa
-        elif(self.ide == 2):
-            return np.full_like(a, self.w) # Make numpy compatible
-        elif(self.ide == 5):
-            f1=(a/self.a1)**self.nw-1.
-            f2=(a/self.a1)**self.nw+1.
-            f3=(a/self.a2)**self.nw-1.
-            f4=(a/self.a2)**self.nw+1.
+        elif (self.ide == 2):
+            return np.full_like(a, self.w)  # Make numpy compatible
+        elif (self.ide == 5):
+            f1 = (a/self.a1)**self.nw-1.
+            f2 = (a/self.a1)**self.nw+1.
+            f3 = (a/self.a2)**self.nw-1.
+            f4 = (a/self.a2)**self.nw+1.
             return -1.+f1/f2-f3/f4
         else:
             raise ValueError('ide not recognised')
@@ -356,7 +372,7 @@ class cosmology():
         Cosmological radiataion density as a function of 'a'
         '''
         return self.Om_r*(a**-4)/self.H2(a)
-        
+
     def Omega_m(self, a):
         '''
         Cosmological matter density as a function of 'a'
@@ -430,7 +446,7 @@ class cosmology():
         na = 129
         a_lintab = np.linspace(amin, amax, na)
         a_logtab = mead.logspace(amin, amax, na)
-        
+
         plt.figure(1, figsize=(20, 6))
 
         # Omegas - Linear
@@ -474,13 +490,13 @@ class cosmology():
         plt.xlabel(r'$a$')
         plt.ylabel(r'$w(a)$')
         plt.ylim((-1.05, 1.05))
-        
+
         plt.show()
 
     # Plot cosmic distances and times (dimensionless)
     # TODO: Split distance and time and add dimensions
     def plot_distances(self):
-        
+
         plt.subplots(3, figsize=(20, 6))
 
         amin = 1e-4
@@ -509,8 +525,8 @@ class cosmology():
 
     # Plot g(a) and f(a)
     def plot_growth(self):
-        
-        plt.figure(1,figsize=(20, 6))
+
+        plt.figure(1, figsize=(20, 6))
 
         amin = 1e-4
         amax = 1.
@@ -540,18 +556,18 @@ class cosmology():
         plt.show()
 
     ### ###
-    
+
 ## Definitions of cosmological functions ##
 
 # TODO: Should these be class methods?
 
 # Hubble function: \dot(a)/a
-#def H(cosm, a):
+# def H(cosm, a):
 #    H2=(cosm.Om_r*a**-4)+(cosm.Om_m*a**-3)+cosm.Om_w*X_de(cosm, a)+cosm.Om_v+(1.-cosm.Om)*a**-2
 #    return np.sqrt(H2)
 
 # Acceleration function: \ddot(a)/a
-#def AH(cosm, a):
+# def AH(cosm, a):
 #    AH=-0.5*((2.*cosm.Om_r*a**-4)+(cosm.Om_m*a**-3)+cosm.Om_w*(1.+3*w_de(cosm, a)*X_de(cosm, a))-2.*cosm.Om_v)
 #    return AH
 
@@ -584,11 +600,11 @@ class cosmology():
 #         f3=(a/cosm.a2)**cosm.nw-1.
 #         f4=(a/cosm.a2)**cosm.nw+1.
 #         return -1.+f1/f2-f3/f4
-    
+
 # Omega_r as a function of 'a'
 # def Omega_r(cosm, a):
 #     return cosm.Om_r*(a**-4)/H(cosm, a)**2
-    
+
 # Omega_m as a function of 'a'
 # def Omega_m(cosm, a):
 #     return cosm.Om_m*(a**-3)/H(cosm, a)**2
@@ -635,11 +651,13 @@ class cosmology():
 
 ## Generic 'cosmology' functions that should *not* take cosm class as input ##
 
+
 def scale_factor_z(z):
     '''
     Scale factor at redshift z: 1/a = 1+z
     '''
     return 1./(1.+z)
+
 
 def redshift_a(a):
     '''
@@ -647,11 +665,13 @@ def redshift_a(a):
     '''
     return -1.+1./a
 
+
 def comoving_matter_density(Om_m):
     '''
     Comoving matter density, not a function of time [Msun/h / (Mpc/h)^3]
     '''
     return const.rhoc_cos*Om_m
+
 
 def physical_matter_density(a, Om_m):
     '''
@@ -659,11 +679,13 @@ def physical_matter_density(a, Om_m):
     '''
     return comoving_matter_density(Om_m)*a**-3
 
+
 def Mass_R(R, Om_m):
     '''
     Mass contained within a sphere of radius 'R' in a homogeneous universe
     '''
     return (4./3.)*np.pi*R**3*comoving_matter_density(Om_m)
+
 
 def Radius_M(M, Om_m):
     '''
@@ -671,8 +693,10 @@ def Radius_M(M, Om_m):
     '''
     return np.cbrt(3.*M/(4.*np.pi*comoving_matter_density(Om_m)))
 
+
 def Delta2(Power_k, k):
     return Power_k(k)*k**3/(2.*np.pi**2)
+
 
 def sigma_R(R, Power_k):
 
@@ -683,7 +707,8 @@ def sigma_R(R, Power_k):
             return Power_k(k)*(k**2)*Tophat_k(k*R)**2
 
         # Evaluate the integral and convert to a nicer form
-        kmin = 0.; kmax = np.inf # Integration range
+        kmin = 0.
+        kmax = np.inf  # Integration range
         sigma_squared, _ = integrate.quad(sigma_integrand, kmin, kmax)
         sigma = np.sqrt(sigma_squared/(2.*np.pi**2))
         return sigma
@@ -693,6 +718,7 @@ def sigma_R(R, Power_k):
 
     # This is the function evaluated
     return sigma_func(R)
+
 
 def dlnsigma2_dlnR(R, Power_k):
     '''
@@ -704,7 +730,8 @@ def dlnsigma2_dlnR(R, Power_k):
             return Power_k(k)*(k**3)*Tophat_k(k*R)*dTophat_k(k*R)
 
         # Evaluate the integral and convert to a nicer form
-        kmin = 0.; kmax = np.inf # Integration range
+        kmin = 0.
+        kmax = np.inf  # Integration range
         dsigma, _ = integrate.quad(dsigma_integrand, kmin, kmax)
         dsigma = R*dsigma/(np.pi*sigma_R(R, Power_k))**2
         return dsigma
@@ -715,21 +742,27 @@ def dlnsigma2_dlnR(R, Power_k):
     # This is the function evaluated
     return dsigma_func(R)
 
+
 def nu_R(R, Power_k, dc=1.686):
     return dc/sigma_R(R, Power_k)
+
 
 def nu_M(M, Power_k, Om_m, dc=1.686):
     R = Radius_M(M, Om_m)
     return nu_R(R, Power_k, dc)
+
 
 def Mstar(Power_k, Om_m, dc):
     '''
     nu(Mstar) = 1
     '''
     from scipy.optimize import root_scalar as root
-    M1 = 1e12; M2=1e13 # Initial guesses
-    sol = root(lambda M: nu_M(M, Power_k, Om_m, dc)-1., x0=M1, x1=M2) # Root finding
-    return sol.root # Return of root is a root object, so isolate the solution
+    M1 = 1e12
+    M2 = 1e13  # Initial guesses
+    sol = root(lambda M: nu_M(M, Power_k, Om_m, dc) -
+               1., x0=M1, x1=M2)  # Root finding
+    return sol.root  # Return of root is a root object, so isolate the solution
+
 
 def calculate_AW10_rescaling_parameters(z_tgt, R1_tgt, R2_tgt, sigma_Rz_ogn, sigma_Rz_tgt, Om_m_ogn, Om_m_tgt):
 
@@ -751,7 +784,8 @@ def calculate_AW10_rescaling_parameters(z_tgt, R1_tgt, R2_tgt, sigma_Rz_ogn, sig
     s0 = 1.
     z0 = z_tgt
 
-    s, z = fmin(lambda x: rescaling_cost_function(x[0], x[1], z_tgt, R1_tgt, R2_tgt, sigma_Rz_ogn, sigma_Rz_tgt), [s0, z0])
+    s, z = fmin(lambda x: rescaling_cost_function(
+        x[0], x[1], z_tgt, R1_tgt, R2_tgt, sigma_Rz_ogn, sigma_Rz_tgt), [s0, z0])
     sm = (Om_m_tgt/Om_m_ogn)*s**3
 
     # Warning

@@ -7,13 +7,14 @@ from mead_general import find_closest_index_value
 
 ### Differentiation ###
 
+
 def derivative(f, x, dx=1e-3):
     '''
     Calculate the numerical derivative of f(x) at the point x: df/dx
     NOTE: scipy.misc.derivative
     '''
     hdx = dx/2.
-    df = f(x+hdx)-f(x-hdx) # Two-sided difference in numerator
+    df = f(x+hdx)-f(x-hdx)  # Two-sided difference in numerator
     return df/dx
 
 
@@ -23,9 +24,9 @@ def log_derivative(f, x, dx=1e-3):
     NOTE: scipy.misc.derivative
     '''
     hdx = dx/2.
-    dlnf = np.log(f(x+hdx)/f(x-hdx)) # Two-sided difference in numerator
-    dlnx = np.log((x+hdx)/(x-hdx)) # Two-sided (is this necessary?)
-    #dlnx = log(1.+dx/x) # Using this is probably fine; for dx<<x they are equal
+    dlnf = np.log(f(x+hdx)/f(x-hdx))  # Two-sided difference in numerator
+    dlnx = np.log((x+hdx)/(x-hdx))  # Two-sided (is this necessary?)
+    # dlnx = log(1.+dx/x) # Using this is probably fine; for dx<<x they are equal
     return dlnf/dlnx
 
 
@@ -53,7 +54,7 @@ def derivative_from_samples(x, xs, fs):
         xs: Sample locations
         fs: Value of function at sample locations
     '''
-    
+
     ix, _ = find_closest_index_value(xs, x)
     if ix == 0:
         (imin, imax) = (0, 1) if x < xs[0] else (0, 2)
@@ -69,36 +70,38 @@ def derivative_from_samples(x, xs, fs):
 
 ### Integration ###
 
-def integrate_quad_log(func,a,b,\
-                       args=(),\
-                       full_output=0,\
-                       epsabs=1.49e-08,\
-                       epsrel=1.49e-08,\
-                       limit=50,\
-                       points=None,\
-                       weight=None,\
-                       wvar=None,\
-                       wopts=None,\
-                       maxp1=50,\
+
+def integrate_quad_log(func, a, b,
+                       args=(),
+                       full_output=0,
+                       epsabs=1.49e-08,
+                       epsrel=1.49e-08,
+                       limit=50,
+                       points=None,
+                       weight=None,
+                       wvar=None,
+                       wopts=None,
+                       maxp1=50,
                        limlst=50):
     '''
     A routine to integrate in log space. 
     This may actually be pretty useless... not sure. Should do speed tests
     TODO: Surely can use *args and **kwargs here. This is ugly as fuck.
     '''
-    loga=np.log(a); logb=np.log(b)
-    ans=np.integrate.quad(lambda x, *args: np.exp(x)*func(np.exp(x), *args), loga, logb,\
-                        args=args,\
-                        full_output=full_output,\
-                        epsabs=epsabs,\
-                        epsrel=epsrel,\
-                        limit=limit,\
-                        points=points,\
-                        weight=weight,\
-                        wvar=wvar,\
-                        wopts=wopts,\
-                        maxp1=maxp1,\
-                        limlst=limlst)
+    loga = np.log(a)
+    logb = np.log(b)
+    ans = np.integrate.quad(lambda x, *args: np.exp(x)*func(np.exp(x), *args), loga, logb,
+                            args=args,
+                            full_output=full_output,
+                            epsabs=epsabs,
+                            epsrel=epsrel,
+                            limit=limit,
+                            points=points,
+                            weight=weight,
+                            wvar=wvar,
+                            wopts=wopts,
+                            maxp1=maxp1,
+                            limlst=limlst)
     return ans
 
 

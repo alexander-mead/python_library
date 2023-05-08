@@ -1,6 +1,7 @@
 # Third-party imports
 import numpy as np
 
+
 def specific_angular_momentum_vector(particle):
     '''
     Calculate the specific angular momentum vector of a particle instance
@@ -10,6 +11,7 @@ def specific_angular_momentum_vector(particle):
     v = np.array([particle.vx, particle.vy, particle.vz])
     return np.cross(r, v)
 
+
 def semi_major_axis(P, M_star, sim):
     '''
     Use Kepler's third law to calculate semi-major axis from orbital period
@@ -18,17 +20,27 @@ def semi_major_axis(P, M_star, sim):
     f2 = 4.*np.pi**2
     return (f1/f2)**(1./3.)
 
+
 def rotate_transit_particles(sim):
     '''
     Rotate the simulation particles appropriate for visualising transiting particles
     '''
     for particle in sim.particles:
-        x = particle.x; y = particle.y; z = particle.z
-        vx = particle.vx; vy = particle.vy; vz = particle.vz
-        particle.x = x; particle.y = z; particle.z = y
-        particle.vx = vx; particle.vy = vz; particle.vz = vy
-        #particle.x = z; particle.y = y; particle.z = x
-        #particle.vx = vz; particle.vy = vy; particle.vz = vx
+        x = particle.x
+        y = particle.y
+        z = particle.z
+        vx = particle.vx
+        vy = particle.vy
+        vz = particle.vz
+        particle.x = x
+        particle.y = z
+        particle.z = y
+        particle.vx = vx
+        particle.vy = vz
+        particle.vz = vy
+        # particle.x = z; particle.y = y; particle.z = x
+        # particle.vx = vz; particle.vy = vy; particle.vz = vx
+
 
 def reverse_motion(particle):
     '''

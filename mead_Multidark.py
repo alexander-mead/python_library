@@ -2,29 +2,31 @@
 import numpy as np
 
 # Available Multidark scale factors
-scalefacs = [0.257, 0.287, 0.318, 0.348, 0.378, 0.409, 0.439, 
-    0.470, 0.500, 0.530, 0.561, 0.591, 0.621, 0.652, 
-    0.682, 0.713, 0.728, 0.743, 0.758, 0.773, 0.788, 
-    0.804, 0.819, 0.834, 0.849, 0.864, 0.880, 0.895, 
-    0.910, 0.925, 0.940, 0.956, 0.971, 0.986, 1.001]
+scalefacs = [0.257, 0.287, 0.318, 0.348, 0.378, 0.409, 0.439,
+             0.470, 0.500, 0.530, 0.561, 0.591, 0.621, 0.652,
+             0.682, 0.713, 0.728, 0.743, 0.758, 0.773, 0.788,
+             0.804, 0.819, 0.834, 0.849, 0.864, 0.880, 0.895,
+             0.910, 0.925, 0.940, 0.956, 0.971, 0.986, 1.001]
 
 # Snapshots corresponding to scale factors
-snaps = [36, 38, 40, 42, 44, 46, 48, 
-            50, 52, 54, 56, 58, 60, 62, 
-            64, 66, 67, 68, 69, 70, 71, 
-            72, 73, 74, 75, 76, 77, 78, 
-            79, 80, 81, 82, 83, 84, 85]
+snaps = [36, 38, 40, 42, 44, 46, 48,
+         50, 52, 54, 56, 58, 60, 62,
+         64, 66, 67, 68, 69, 70, 71,
+         72, 73, 74, 75, 76, 77, 78,
+         79, 80, 81, 82, 83, 84, 85]
 
 # Dictionary mapping snapshots to scale factors
 snaps_scalefacs = dict(zip(snaps, scalefacs))
 
-L = 1000. # Box size [Mpc/h]
+L = 1000.  # Box size [Mpc/h]
+
 
 def z_from_snapshot(snap):
 
     a = snaps_scalefacs[snap]
     z = -1.+1./a
     return z
+
 
 def snapshot_from_z(z):
 
@@ -35,6 +37,7 @@ def snapshot_from_z(z):
     else:
         raise ValueError('Cannot convert redshift to snapshot')
     return snap
+
 
 def read_binstats(infile):
 
@@ -51,6 +54,7 @@ def read_binstats(infile):
 
     return Mmin, Mmax, M, numin, numax, nu, b, rv
 
+
 def read_halo_catalogue(infile, Mdef='Mvir'):
 
     # Read data file in to memory
@@ -60,7 +64,7 @@ def read_halo_catalogue(infile, Mdef='Mvir'):
     x = data[:, 1]
     y = data[:, 2]
     z = data[:, 3]
-    
+
     # Halo-mass data
     if Mdef == 'Mvir':
         M = data[:, 4]
@@ -80,15 +84,16 @@ def read_halo_catalogue(infile, Mdef='Mvir'):
     # Return the positions and the halo masses
     return [x, y, z], M
 
+
 def read_Bnl(inbase, verbose=False):
-        
+
     # Get halo masses
-    #infile = inbase+'_binstats.dat'
-    #print('Input file:', infile)
-    #data = np.loadtxt(infile)
-    #print('Full data:')
-    #print(data)
-    #print('')
+    # infile = inbase+'_binstats.dat'
+    # print('Input file:', infile)
+    # data = np.loadtxt(infile)
+    # print('Full data:')
+    # print(data)
+    # print('')
     infile = inbase+'_binstats.dat'
     _, _, Ms, _, _, nus, _, rvs = read_binstats(infile)
 
@@ -132,7 +137,7 @@ def read_Bnl(inbase, verbose=False):
     for iM1, _ in enumerate(Ms):
         for iM2, _ in enumerate(Ms):
             bin1 = 'bin'+str(iM1+1)
-            bin2 = 'bin'+str(iM2+1)    
+            bin2 = 'bin'+str(iM2+1)
             infile = inbase+'_'+bin1+'_'+bin2+'_power.dat'
             data = np.loadtxt(infile)
             Pk_hh[iM1, iM2, :] = data[:, 1]-data[:, 2]
@@ -142,8 +147,9 @@ def read_Bnl(inbase, verbose=False):
 
     return Ms, nus, rvs, ks, Pk_hh, Pk_hh_err, beta_NL, beta_NL_err
 
+
 def write_Bnl(k, BNL, outfile):
-    
+
     # Number of halo masses
     nM = len(BNL[:, 0, 0])
 

@@ -1,6 +1,7 @@
 # Third-party imports
 import numpy as np
 
+
 def quadratic_roots(a, b, c):
     '''
     Provides the two real solutions for x for a quadratic a*x^2 + b*x + c = 0 
