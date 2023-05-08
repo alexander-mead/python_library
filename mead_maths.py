@@ -1,4 +1,4 @@
-def is_prime(n):
+def is_prime(n: int) -> int:
     '''
     Returns True if the number 'n' is prime
     '''
@@ -10,7 +10,7 @@ def is_prime(n):
     return prime
 
 
-def sum_of_digits(n):
+def sum_of_digits(n: int) -> int:
     '''
     Calculates the sum of the digits of a number
     '''
@@ -20,7 +20,7 @@ def sum_of_digits(n):
     return tot
 
 
-def product_of_digits(n):
+def product_of_digits(n: int) -> int:
     '''
     Calculates the product of the digits of a number
     '''
@@ -30,7 +30,7 @@ def product_of_digits(n):
     return tot
 
 
-def is_even(num):
+def is_even(num: int) -> bool:
     '''
     Returns true if integer is even
     '''
@@ -40,22 +40,23 @@ def is_even(num):
         return False
 
 
-def is_odd(num):
+def is_odd(num: int) -> bool:
     '''
     Returns true if integer is odd
     '''
     return not is_even(num)
 
 
-def ceiling(a, b):
+def ceiling(a: float, b: float) -> int:
     '''
     Ceiling division a/b
     TODO: Could also use math.ceiling
+    TODO: What about floor?
     '''
     return -(-a // b)
 
 
-def reverse_digits(old_number):
+def reverse_digits(old_number: int) -> int:
     '''
     Reverses the digits of integer n
     '''
@@ -67,3 +68,12 @@ def reverse_digits(old_number):
         new_number = new_number*10+last_digit  # Construct new number
     return new_number
     # return int(str(n)[::-1]) # Easy using strings
+
+
+def remainder_division(a: int, b: int) -> tuple:
+    '''
+    Returns the whole division and remainder of a/b
+    '''
+    whole = a//b
+    remainder = a % b
+    return whole, remainder

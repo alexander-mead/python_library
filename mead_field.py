@@ -2,7 +2,9 @@
 import numpy as np
 
 
-def make_Gaussian_random_field_2D(mean_value, power_spectrum, map_size, mesh_cells, periodic, *args):
+def make_Gaussian_random_field_2D(mean_value: float, power_spectrum: np.ndarray,
+                                  map_size: int, mesh_cells: int, *args,
+                                  periodic=True) -> np.ndarray:
 
     # mean_value: mean value for the field
     # power_spectrum: P(k, *args) power spectrum for the field [(length units)^2]
@@ -18,7 +20,7 @@ def make_Gaussian_random_field_2D(mean_value, power_spectrum, map_size, mesh_cel
     # Parameters
     pad_fraction = 2  # Amount to increase size of array if non-periodic
 
-    if (periodic):
+    if periodic:
         tran_cells = mesh_cells
         tran_size = map_size
     else:
@@ -67,7 +69,7 @@ def make_Gaussian_random_field_2D(mean_value, power_spectrum, map_size, mesh_cel
 # Return a list of the integer coordinates of all local maxima in a 2D field
 
 
-def find_field_peaks_2D(field, nx, ny, periodic):
+def find_field_peaks_2D(field: np.ndarray, nx: int, ny: int, periodic=True):
 
     # Initialise an empty list
     peaks = []
@@ -100,7 +102,7 @@ def find_field_peaks_2D(field, nx, ny, periodic):
 # Return a list of all cells that are neighbouring some integer cell coordinate
 
 
-def neighbour_cells_2D(ix, iy, nx, ny, periodic):
+def neighbour_cells_2D(ix: int, iy: int, nx: int, ny: int, periodic=True):
 
     # Check if the cell is actually within the array
     if ((ix < 0) or (ix >= nx) or (iy < 0) or (iy >= ny)):
@@ -152,7 +154,9 @@ def neighbour_cells_2D(ix, iy, nx, ny, periodic):
     return cells
 
 
-def compute_cross_spectrum(d1, d2, L, kmin=None, kmax=None, nk=64, dimensionless=True, eps_slop=1e-3):
+def compute_cross_spectrum(d1: np.ndarray, d2: np.ndarray, L: float,
+                           kmin=None, kmax=None, nk=64, dimensionless=True,
+                           eps_slop=1e-3) -> np.ndarray:
     '''
     Compute the cross spectrum between two real-space 2D density slices: d1 and d2
     If d1 = d2 then this will be the (auto) power spectrum, otherwise cross spectrum

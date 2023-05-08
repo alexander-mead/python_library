@@ -110,7 +110,7 @@ def mrange(a, b=None, step=None):
             return range(a, b+1, step)
 
 
-def is_float_close_to_integer(x):
+def is_float_close_to_integer(x: float) -> bool:
     '''
     Checks if float is close to an integer value
     '''
@@ -118,7 +118,7 @@ def is_float_close_to_integer(x):
     return isclose(x, int(x))
 
 
-def bin_edges_for_integers(a, b=None):
+def bin_edges_for_integers(a: int, b=None) -> list:
     '''
     Defines a set of bin edges for histograms of integer data
     e.g., bin_edges_for_integers(1, 5) = 0.5, 1.5, 2.5, 3.5, 4.5, 5.5 so that values are at centres
@@ -132,7 +132,7 @@ def bin_edges_for_integers(a, b=None):
     return bin_edges
 
 
-def key_from_value(dict, value):
+def key_from_value(dict: dict, value: any) -> str:
     '''
     Get a dictionary key from the value
     From: https://stackoverflow.com/questions/8023306
@@ -145,8 +145,21 @@ def key_from_value(dict, value):
 ### These functions operate on collections (lists, tuples, sets, dictionaries) ###
 
 
-def count_entries_of_nested_list(listOfElem):
-    ''' Get number of elements in a nested list'''
+def pad_list(a: list, n: int) -> list:
+    '''
+    If a list contains fewer than n elements then expand and pad it to be length n
+    by prepending the list using the 0-th element until it is n long
+    TODO: Could also pad by appending the last element 0 -> -1?
+    '''
+    while len(a) < n:
+        a.insert(0, a[0])
+    return a
+
+
+def count_entries_of_nested_list(listOfElem: list) -> int:
+    '''
+    Get number of elements in a nested list
+    '''
     count = 0
     for elem in listOfElem:  # Iterate over the list
         if type(elem) == list:  # Check if type of element is list
@@ -156,7 +169,7 @@ def count_entries_of_nested_list(listOfElem):
     return count
 
 
-def create_unique_list(list_with_duplicates):
+def create_unique_list(list_with_duplicates: list) -> list:
     '''
     Takes a list that may contain duplicates and returns a new list with the duplicates removed
     '''
@@ -164,7 +177,7 @@ def create_unique_list(list_with_duplicates):
     return list(dict.fromkeys(list_with_duplicates))
 
 
-def remove_list_from_list(removal_list, original_list):
+def remove_list_from_list(removal_list: list, original_list: list) -> list:
     '''
     Remove items in 'removal_list' if they occur in 'original_list'
     NOTE: This only removes the first occurance of something in a list, care if repeated entries
@@ -176,7 +189,7 @@ def remove_list_from_list(removal_list, original_list):
     return new_list
 
 
-def remove_multiple_elements_from_list(original_list, indices):
+def remove_multiple_elements_from_list(original_list: list, indices: list) -> list:
     '''
     Remove multiple elements from a list by providing a list of indices
     '''
@@ -186,7 +199,7 @@ def remove_multiple_elements_from_list(original_list, indices):
     return new_list
 
 
-def second_largest(numbers):
+def second_largest(numbers: list) -> float | int:
     '''
     Returns the second-largest entry in collection of numbers
     '''
