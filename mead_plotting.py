@@ -1,3 +1,4 @@
+# Third-party imports
 import matplotlib.pyplot as plt
 
 def triangle_plots(dicts_of_samples: list, params: dict, labels: dict,

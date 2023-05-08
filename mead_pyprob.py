@@ -1,7 +1,12 @@
-import sys, os
+# Standard imports
+import sys
+import os
+
+# Third-party imports
 import numpy as np
 import matplotlib.pyplot as plt
 
+# PyProb imports
 import pyprob
 from pyprob.distributions import Empirical
 

@@ -1,3 +1,4 @@
+# Third-party imports
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -67,7 +68,6 @@ def create_mock_classification_data(mus, sigs, ns, rseed=None, verbose=False):
         ns - Length 'c' list of integer number of members of each class
         rseed - Random number seed
     '''
-    from numpy import array, diag, append
     from numpy.random import seed, multivariate_normal
     if verbose:
         print('Creating mock classification dataset')
@@ -75,7 +75,7 @@ def create_mock_classification_data(mus, sigs, ns, rseed=None, verbose=False):
         print('Number of classes:', len(ns))
         print('Total number of entries:', sum(ns))
         print()
-    x = array([])
+    x = np.array([])
     if rseed is not None: seed(rseed)
     for i, (mu, sig, n) in enumerate(zip(mus, sigs, ns)): # mus, sigs, ns must be the same length
         if verbose:
@@ -83,11 +83,11 @@ def create_mock_classification_data(mus, sigs, ns, rseed=None, verbose=False):
             print('Mean:', mu)
             print('Standard deviation:', sig)
             print()
-        y = multivariate_normal(mean=mu, cov=diag(sig), size=n)
+        y = multivariate_normal(mean=mu, cov=np.diag(sig), size=n)
         if i==0:
             x = y.copy()
         else:
-            x = append(x, y, axis=0)
+            x = np.append(x, y, axis=0)
     labels = []
     for i, n in enumerate(ns):
         labels += n*['c'+str(i)] # Label could be less boring than 'i'

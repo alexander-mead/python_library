@@ -1,3 +1,6 @@
+# Third-party imports
+import numpy as np
+
 ### Activation functions ###
 
 # TODO: Make classes with forward- and backward-propagation methods
@@ -7,28 +10,23 @@ def LU(x): # Linear Unit
     return x
 
 def sigmoid(x):
-    from numpy import exp
-    return 1./(1.+exp(-x))
+    return 1./(1.+np.exp(-x))
 
 def zeroed_sigmoid(x):
     return 2.*sigmoid(x)-1.
 
 def tanh(x):
-    from numpy import tanh as nptanh
-    return nptanh(x)
+    return np.tanh(x)
 
 def ReLU(x): # Rectified Linear Unit
-    from numpy import where, maximum
-    #return where(x<0., 0., x)
-    return maximum(0., x)
+    #return np.where(x<0., 0., x)
+    return np.maximum(0., x)
 
 def leakyReLU(x, alpha=0.1): # Leaky Rectified Linear Unit
-    from numpy import where
-    return where(x<0., alpha*x, x)
+    return np.where(x<0., alpha*x, x)
 
 def ELU(x, alpha=1.): # Exponential Linear Unit
-    from numpy import where, exp
-    return where(x<0., alpha*(exp(x)-1.), x)
+    return np.where(x<0., alpha*(np.exp(x)-1.), x)
 
 ### ###
 
@@ -47,16 +45,13 @@ def d_tanh(x):
     return 1.-tanh(x)**2
 
 def d_ReLU(x):
-    from numpy import where
-    return where(x<0., 0., 1.)
+    return np.where(x<0., 0., 1.)
 
 def d_leakyReLU(x, alpha=0.1):
-    from numpy import where
-    return where(x<0., alpha, 1.)
+    return np.where(x<0., alpha, 1.)
 
 def d_ELU(x, alpha=1.):
-    from numpy import where, exp
-    return where(x<0., alpha*exp(x), 1.)
+    return np.where(x<0., alpha*np.exp(x), 1.)
 
 ### ###
 
@@ -134,32 +129,32 @@ def backward_propagation(dL, xs, ws, dact=d_LU):
     return grad_ws
 
 def forward_timestep(i, x0, x1, x2, W0, W1, act):
-    from numpy import matmul # Replace with dot
+    from numpy import matmul # TODO: Replace with dot
     x1[i] = act(matmul(W0[i], x0[i]))
     x2[i] = matmul(W1[i], x1[i]) # No non-linear function to output layer
 
 def forward_timestep_lag(i, x0, x1, x2, W0, W1, l01, l12, act):
-    from numpy import matmul # Replace with dot
+    from numpy import matmul # TODDO: Replace with dot
     x1[i] = act(matmul(W0[i], x0[i-l01]))
     x2[i] = matmul(W1[i], x1[i-l12])
 
 def forward_timestep_lag_corrected(i, x0, x1, x2, W0, W1, l01, l12, act):
-    from numpy import matmul # Replace with dot
+    from numpy import matmul # TODO: Replace with dot
     x1[i] = act(matmul(W0[i], x0[i-l01]+(x0[i-l01]-x0[i-l01-1])*l01))
     x2[i] = matmul(W1[i], x1[i-l12]+(x1[i-l12]-x1[i-l12-1])*l12)
 
 def backward_timestep(i, x0, x1, x2, g0, g1, g2, W0, W1, dact):
-    from numpy import matmul # Replace with dot
+    from numpy import matmul # TODO: Replace with dot
     g1[i] = matmul(g2[i], W1[i])
     g0[i] = matmul(g1[i]*dact(x1[i]), W0[i])
 
 def backward_timestep_lag(i, x0, x1, x2, g0, g1, g2, W0, W1, l01, l12, dact):
-    from numpy import matmul # Replace with dot
+    from numpy import matmul # TODO: Replace with dot
     g1[i] = matmul(g2[i-l12], W1[i])
     g0[i] = matmul(g1[i-l01]*dact(x1[i]), W0[i])
 
 def backward_timestep_lag_corrected(i, x0, x1, x2, g0, g1, g2, W0, W1, l01, l12, dact):
-    from numpy import matmul # Replace with dot
+    from numpy import matmul # TODO: Replace with dot
     g1[i] = matmul(g2[i-l12]+(g2[i-l12]-g2[i-l12-1])*l12, W1[i])
     g0[i] = matmul((g1[i-l01]+(g1[i-l01]-g1[i-l01-1])*l01)*dact(x1[i-2*(l01+l12)]), W0[i])
 
@@ -204,17 +199,15 @@ def ViscousDescent(grad, x, v, alpha=1e-3, rho=0.99, **kwargs):
     return xn, vn
 
 def AdaGrad(grad, x, g2_sum, alpha=1e-3, eps=1e-7, **kwargs):
-    from numpy import sqrt
     grad = grad(x, **kwargs)
     g2_sumn = g2_sum+grad**2 # Accumulate sum of gradient-squares in each direction; returns a vector
-    xn = x-alpha*grad/(sqrt(g2_sumn)+eps)
+    xn = x-alpha*grad/(np.sqrt(g2_sumn)+eps)
     return xn, g2_sumn
 
 def RMSProp(grad, x, g2, alpha=1e-3, rho=0.99, eps=1e-7, **kwargs):
-    from numpy import sqrt
     grad = grad(x, **kwargs)
     g2n = rho*g2+(1.-rho)*grad**2 # Accumulates a sum of gradient-squares that decays; returns a vector
-    xn = x-alpha*grad/(sqrt(g2n)+eps)
+    xn = x-alpha*grad/(np.sqrt(g2n)+eps)
     return xn, g2n
 
 def Adam(grad, x, m1, m2, t, alpha=1e-3, beta1=0.99, beta2=0.99, eps=1e-7, unbiasing=True, **kwargs):
@@ -222,7 +215,6 @@ def Adam(grad, x, m1, m2, t, alpha=1e-3, beta1=0.99, beta2=0.99, eps=1e-7, unbia
     Famous Adam algoirthm, a combination of AdaGrad/RMSProp and momentum
     Parameter beta1 controls friction term while beta2 controls gradient penalty
     '''
-    from numpy import sqrt
     grad = grad(x, **kwargs)
     m1n = beta1*m1+(1.-beta1)*grad    # Sort of like velocity/momentum/friction part
     m2n = beta2*m2+(1.-beta2)*grad**2 # Gradient penalty
@@ -232,7 +224,7 @@ def Adam(grad, x, m1, m2, t, alpha=1e-3, beta1=0.99, beta2=0.99, eps=1e-7, unbia
     else:
         u1 = m1n
         u2 = m2n
-    xn = x-alpha*u1/(sqrt(u2)+eps)
+    xn = x-alpha*u1/(np.sqrt(u2)+eps)
     return xn, m1n, m2n
 
 ### ###
@@ -245,8 +237,7 @@ def softmax(x, T):
     The vector of scores, x, could initially be positive or negative; ordering is preserved.
     T is an effective 'temperature', which governs the relative contributions of different x
     '''
-    from numpy import exp
-    ex = exp(x/T)
+    ex = np.exp(x/T)
     return ex/ex.sum()
 
 ### ###

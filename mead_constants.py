@@ -1,4 +1,6 @@
 # Try https://docs.scipy.org/doc/scipy/reference/constants.html
+
+# Third-party imports
 from scipy import constants as const
 
 # Mathematical constants

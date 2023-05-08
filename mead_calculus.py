@@ -1,3 +1,10 @@
+# Third-party imports
+import numpy as np
+from scipy.interpolate import lagrange
+
+# Mead imports
+from mead_general import find_closest_index_value
+
 ### Differentiation ###
 
 def derivative(f, x, dx=1e-3):
@@ -15,10 +22,9 @@ def log_derivative(f, x, dx=1e-3):
     Calculate the logarithmic derivative of f(x) at the point x: dln(f)/dln(x)
     NOTE: scipy.misc.derivative
     '''
-    from numpy import log
     hdx = dx/2.
-    dlnf = log(f(x+hdx)/f(x-hdx)) # Two-sided difference in numerator
-    dlnx = log((x+hdx)/(x-hdx)) # Two-sided (is this necessary?)
+    dlnf = np.log(f(x+hdx)/f(x-hdx)) # Two-sided difference in numerator
+    dlnx = np.log((x+hdx)/(x-hdx)) # Two-sided (is this necessary?)
     #dlnx = log(1.+dx/x) # Using this is probably fine; for dx<<x they are equal
     return dlnf/dlnx
 
@@ -30,10 +36,9 @@ def gradient(f, x, dx=1e-3):
     TODO: dx could also be a vector
     TODO: Loop is probably very slow here
     '''
-    from numpy import empty, zeros
-    df = empty(len(x))
+    df = np.empty(len(x))
     for i, _ in enumerate(x):
-        hdx = zeros(len(x))
+        hdx = np.zeros(len(x))
         hdx[i] = dx/2.
         df[i] = (f(x+hdx)-f(x-hdx))/dx
     return df
@@ -48,8 +53,7 @@ def derivative_from_samples(x, xs, fs):
         xs: Sample locations
         fs: Value of function at sample locations
     '''
-    from mead_general import find_closest_index_value
-    from scipy.interpolate import lagrange
+    
     ix, _ = find_closest_index_value(xs, x)
     if ix == 0:
         (imin, imax) = (0, 1) if x < xs[0] else (0, 2)
@@ -82,21 +86,19 @@ def integrate_quad_log(func,a,b,\
     This may actually be pretty useless... not sure. Should do speed tests
     TODO: Surely can use *args and **kwargs here. This is ugly as fuck.
     '''
-    from numpy import log, exp
-    from scipy import integrate
-    loga=log(a); logb=log(b)
-    ans=integrate.quad(lambda x, *args: exp(x)*func(exp(x), *args), loga, logb,\
-                       args=args,\
-                       full_output=full_output,\
-                       epsabs=epsabs,\
-                       epsrel=epsrel,\
-                       limit=limit,\
-                       points=points,\
-                       weight=weight,\
-                       wvar=wvar,\
-                       wopts=wopts,\
-                       maxp1=maxp1,\
-                       limlst=limlst)
+    loga=np.log(a); logb=np.log(b)
+    ans=np.integrate.quad(lambda x, *args: np.exp(x)*func(np.exp(x), *args), loga, logb,\
+                        args=args,\
+                        full_output=full_output,\
+                        epsabs=epsabs,\
+                        epsrel=epsrel,\
+                        limit=limit,\
+                        points=points,\
+                        weight=weight,\
+                        wvar=wvar,\
+                        wopts=wopts,\
+                        maxp1=maxp1,\
+                        limlst=limlst)
     return ans
 
 
@@ -114,8 +116,7 @@ def trapz2d(F, x, y):
     Two-dimensional trapezium rule
     First integrates along x for each y, and then y
     '''
-    from numpy import trapz
-    Fmid = trapz(F, x)
-    return trapz(Fmid, y)
+    Fmid = np.trapz(F, x)
+    return np.trapz(Fmid, y)
 
 ### ###

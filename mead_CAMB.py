@@ -1,4 +1,4 @@
-# Third-party imports
+# CAMB imports
 import camb
 
 # Mead imports
@@ -61,8 +61,6 @@ def convert_mead_cosmology(cosm, verbose=False):
 # Get a 2D P(k,z) array for the linear or non-linear power spectrum
 def Pk_mm(ks, zs, pars, nonlinear=None):
 
-    from camb import model
-
     # Parameters
     kmax = 100.
 
@@ -85,8 +83,8 @@ def Pk_mm(ks, zs, pars, nonlinear=None):
                                                         hubble_units = True, 
                                                         k_hunit = True, 
                                                         kmax = kmax,
-                                                        var1 = model.Transfer_tot,
-                                                        var2 = model.Transfer_tot, 
+                                                        var1 = camb.model.Transfer_tot,
+                                                        var2 = camb.model.Transfer_tot, 
                                                         zmax = max(zs),
                                                         )
 

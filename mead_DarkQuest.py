@@ -1,10 +1,10 @@
-# Standard imports
+# Third-party imports
 import numpy as np
 
-# Other imports
+# Dark emulator imports
 from dark_emulator import darkemu
 
-# My imports
+# Mead imports
 import mead_constants as const
 import mead_general as mead
 import mead_cosmology as cosmo
@@ -307,8 +307,6 @@ def Mass_R(emu, R):
 def Mass_nu(emu, nu, z):
 
     # TODO: This does both interpolation and evaluation, could split up?
-
-    # Import
     from scipy.interpolate import InterpolatedUnivariateSpline as ius
 
     # Options

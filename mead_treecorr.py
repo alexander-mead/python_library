@@ -1,5 +1,7 @@
+# Third-party imports
 import numpy as np
 
+# Treecorr imports
 import treecorr
 
 Map_threads = 4

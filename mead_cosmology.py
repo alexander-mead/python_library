@@ -1,9 +1,7 @@
 # Standard imports
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.integrate import odeint
 import scipy.integrate as integrate
-from scipy.interpolate import interp1d
 
 # Mead imports
 import mead_constants as const
@@ -107,6 +105,8 @@ class cosmology():
 
     # Distance and age integrals
     def init_distances(self):
+
+        from scipy.interpolate import interp1d
 
         #global r_tab, t_tab, rp_tab
         #global r, t, rp
@@ -213,6 +213,8 @@ class cosmology():
 
     # Growth function
     def init_growth(self):
+
+        from scipy.integrate import odeint
 
         print('Initialise_growth: Solving growth equations')
 

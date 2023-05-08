@@ -1,4 +1,4 @@
-# Standard
+# Third-party
 import numpy as np
 
 def _SIR_equations(t, y, R0, G0, f, m):

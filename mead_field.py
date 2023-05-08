@@ -1,3 +1,4 @@
+# Third-party imports
 import numpy as np
 
 def make_Gaussian_random_field_2D(mean_value, power_spectrum, map_size, mesh_cells, periodic, *args):
@@ -8,9 +9,6 @@ def make_Gaussian_random_field_2D(mean_value, power_spectrum, map_size, mesh_cel
    # mesh_cells: number of mesh cells for the field
    # periodic: should the map be considered to be periodic or not?
    # *args: extra arguments for power spectrum
-
-   #from numpy import pi as pi
-   #from numpy import fft.fftfreq as fft.fftfreq
    
    # TODO: Enforce Hermitian condition
    # TODO: Use real-to-real FFT

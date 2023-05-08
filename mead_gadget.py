@@ -1,9 +1,10 @@
-# Standard imports
+# Third-party imports
 import numpy as np
 
-# Project imports (come from pylians)
-import readgadget
-import readfof
+# Gadgets imports
+import readgadget # From pylians
+import readfof    # From pylians
+
 
 # For use with Quijote
 

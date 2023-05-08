@@ -1,6 +1,5 @@
-# Import statements
+# Third-party imports
 import numpy as np
-import torch as tc
 from scipy.integrate import quad
 
 ### Continuous probability distributions ###
@@ -336,6 +335,7 @@ def HMC_sampling_torch(lnf, start, n_chains=5, n_points=int(1e3), burn_frac=0.5,
     dt: Time-step for the particles
     T: Integration time per step for the particles
     '''
+    import torch as tc
     # Functions for leap-frog integration
     def get_gradient(x, lnf):
         x = x.detach()

@@ -1,3 +1,4 @@
+# Third-party imports
 import numpy as np
 
 def get_power(name, z):
@@ -22,9 +23,8 @@ def get_powers(name):
 
 def get_response(name, z):
 
-    from numpy import where
     k, zs, Rks = get_responses(name)
-    i = where(zs == z)
+    i = np.where(zs == z) # TODO: index?
     return k, Rks[:, i[0]]
 
 def get_responses(name):

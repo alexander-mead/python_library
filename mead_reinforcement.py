@@ -1,3 +1,7 @@
+# Stndaard imports
+import random
+
+# Third-party imports
 import numpy as np
 
 # Parameters
@@ -19,9 +23,8 @@ def create_random_policy(actions, n, rseed=None):
     '''
     Compute a random policy
     '''
-    from random import seed, choice
-    seed(rseed)
-    return [choice(list(actions)) for _ in range(n)]
+    random.seed(rseed)
+    return [random.choice(list(actions)) for _ in range(n)]
 
 def _value_iteration(transitions, rewards, gamma=gamma_def, verbose=False):
     '''

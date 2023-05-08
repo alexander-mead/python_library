@@ -1,5 +1,9 @@
+# Third-party imports
 import numpy as np
+
+# Mead imports
 import mead_constants as const
+
 
 def black_body_nu(nu, T):
     '''
@@ -10,6 +14,7 @@ def black_body_nu(nu, T):
     a = (2.*const.h*nu**3)/const.c**2
     x = const.h*nu/(const.kB*T)
     return a/(np.exp(x)-1.)
+
 
 def Wein_law_nu(T):
     '''

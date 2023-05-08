@@ -1,6 +1,5 @@
 # Import statements
 import numpy as np
-from scipy.special import erf as erf
 
 # My imports
 import mead_constants as const
@@ -12,10 +11,11 @@ def hit_rate(mu,sig,rho,R):
     # sig: dark matter velocity dispersion [km/s] 
     # rho: dark matter mass denisty [GeV/cm^3]
     # R: radius of shell [au]
+    from scipy.special import erf
     
     # Convert units
     mu_SI = mu*1e3
-    sig_SI = sig*1e3    
+    sig_SI = sig*1e3
     R_SI = R*const.au
     rho_SI = rho*1e6*const.eV_mass*1e9
     

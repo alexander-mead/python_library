@@ -1,3 +1,4 @@
+# Third-party imports
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -18,8 +19,10 @@ Sobel_filter = np.array([
 
 ### Functions ###
 
+
 def sigmoid(x):
     return 1./(1.+np.exp(-x))
+
 
 def invsigmoid(x):
     return np.log(x/(1.-x))
@@ -28,17 +31,23 @@ def invsigmoid(x):
 
 ### Utility ###
 
+
 def convert_8bit_to_float(X):
     return X.astype(float)/255
+
 
 def convert_float_to_8bit(X):
     return (X*255).astype(np.uint8)
 
+
 def convert_to_greyscale(X):
-    #R = 0.299; G = 0.587; B = 0.144 # RGB weights for optimal visual greyscale
-    R = 0.2126; G = 0.7152; B = 0.0722
-    #R = 1./3.; G = 1./3.; B = 1./3.
+    # R = 0.299; G = 0.587; B = 0.144 # RGB weights for optimal visual greyscale
+    R = 0.2126
+    G = 0.7152
+    B = 0.0722
+    # R = 1./3.; G = 1./3.; B = 1./3.
     return R*X[:, :, 0]+G*X[:, :, 1]+B*X[:, :, 2]
+
 
 def image_properties(X):
     '''
@@ -46,7 +55,8 @@ def image_properties(X):
     '''
     print('Image shape:', X.shape)
     print('Data type:', X.dtype)
-    nr = X.shape[0]; nc = X.shape[1] # Numbers of rows and columns
+    nr = X.shape[0]
+    nc = X.shape[1]  # Numbers of rows and columns
     print('Number of rows (y dimension):', nr)
     print('Number of columns (x dimension):', nc)
     print('Total number of pixels:', nr*nc)
@@ -55,17 +65,22 @@ def image_properties(X):
     print('Example pixel value(s):', X[0, 0, :])
     print()
 
+
 def plot_color_image(X, **kwargs):
     plt.figure(**kwargs)
     plt.imshow(X)
-    plt.xticks([]); plt.yticks([])
+    plt.xticks([])
+    plt.yticks([])
     plt.show()
+
 
 def plot_greyscale_image(X, vmin=None, vmax=None, **kwargs):
     plt.figure(**kwargs)
     plt.imshow(X, cmap='gray', vmin=vmin, vmax=vmax)
-    plt.xticks([]); plt.yticks([])
+    plt.xticks([])
+    plt.yticks([])
     plt.show()
+
 
 def plot_color_histograms(X, bins=64):
     '''
@@ -73,7 +88,8 @@ def plot_color_histograms(X, bins=64):
     '''
     colors = ['red', 'green', 'blue']
     for i, color in enumerate(colors):
-        plt.hist(np.ravel(X[:, :, i]), bins=bins, density=True, color=color, alpha=0.5)
+        plt.hist(np.ravel(X[:, :, i]), bins=bins,
+                 density=True, color=color, alpha=0.5)
     plt.xlabel('RGB value')
     plt.xlim((0, 255))
     plt.yticks([])
@@ -83,6 +99,7 @@ def plot_color_histograms(X, bins=64):
 
 ### Processing ###
 
+
 def zero_filter(f):
     '''
     Make a filter sum to zero by filling zeros with negative values
@@ -90,15 +107,17 @@ def zero_filter(f):
     weight = f.sum()
     num_zeros = f.size-np.count_nonzero(f)
     fill = -weight/num_zeros
-    #print(weight, num_zeros, fill, f.size, np.count_nonzero(f))
-    F = np.where(f==0., fill, f)
+    # print(weight, num_zeros, fill, f.size, np.count_nonzero(f))
+    F = np.where(f == 0., fill, f)
     return F
+
 
 def normalize_filter(f):
     '''
     Make a filter sum to unity
     '''
     return f/f.sum()
+
 
 def segmented_image(X, n, random_state=None, random_sample_size=None):
     '''
@@ -111,19 +130,23 @@ def segmented_image(X, n, random_state=None, random_sample_size=None):
             should be less than the number of pixels
         random_sample_size: Number of pixels to sample for means
     '''
-    from numpy.random import choice
+
     from sklearn.cluster import KMeans
     nr, nc, _ = X.shape
     if random_sample_size is None:
         Xflat = X.reshape(nr*nc, 3)
     else:
-        ir = choice(X.shape[0], random_sample_size)#, replace=True)
-        ic = choice(X.shape[1], random_sample_size)#, replace=True)
+        # , replace=True)
+        ir = np.random.choice(X.shape[0], random_sample_size)
+        # , replace=True)
+        ic = np.random.choice(X.shape[1], random_sample_size)
         Xflat = X[ir, ic, :]
     kmeans = KMeans(n_clusters=n, random_state=random_state).fit(Xflat)
     Y = kmeans.cluster_centers_[kmeans.predict(X.reshape(nr*nc, 3))]
-    Y = Y.reshape(nr, nc, 3)/255. # Need to divide by 255 since means are non-integer
+    Y = Y.reshape(nr, nc, 3) / \
+        255.  # Need to divide by 255 since means are non-integer
     return Y
+
 
 def Sobel_edge(X, **kwargs):
     from scipy.signal import convolve2d
@@ -131,20 +154,24 @@ def Sobel_edge(X, **kwargs):
     dy = convolve2d(X, Sobel_filter.T, **kwargs)
     return np.sqrt(dx**2+dy**2)
 
+
 def mean_filter(npix):
     F = np.ones((npix, npix))
     return normalize_filter(F)
 
+
 def Gaussian_filter(npix, spix):
     F = np.empty((npix, npix))
-    if npix%2 == 0:
+    if npix % 2 == 0:
         raise ValueError('Gaissiam filter must be an odd number of pixels')
     mid = (npix-1)//2
     for ir in range(npix):
         for ic in range(npix):
-            ix = ir-mid; iy = ic-mid
+            ix = ir-mid
+            iy = ic-mid
             F[ir, ic] = np.exp(-0.5*(ix**2+iy**2)/spix**2)
     return normalize_filter(F)
+
 
 def smooth(X, npix=3, spix=1, method='Gaussian', **kwargs):
     from scipy.signal import convolve2d
