@@ -2,17 +2,16 @@
 import numpy as np
 
 
-def make_Gaussian_random_field_2D(mean_value: float, power_spectrum: np.ndarray,
-                                  map_size: int, mesh_cells: int, *args,
+def make_Gaussian_random_field_2D(mean_value: float, power_spectrum: callable,
+                                  map_size: float, mesh_cells: int,
                                   periodic=True) -> np.ndarray:
-
-    # mean_value: mean value for the field
-    # power_spectrum: P(k, *args) power spectrum for the field [(length units)^2]
-    # map_size: side length for the map [length units]
-    # mesh_cells: number of mesh cells for the field
-    # periodic: should the map be considered to be periodic or not?
-    # *args: extra arguments for power spectrum
-
+    """
+    Parameters:
+        mean_value: mean value for the field
+        power_spectrum: P(k, *args) power spectrum for the field [(length units)^2]
+        map_size: side length for the map [length units]
+        mesh_cells: number of mesh cells for the field
+    """
     # TODO: Enforce Hermitian condition
     # TODO: Use real-to-real FFT
     # TODO: Generalise to nD
@@ -20,50 +19,34 @@ def make_Gaussian_random_field_2D(mean_value: float, power_spectrum: np.ndarray,
     # Parameters
     pad_fraction = 2  # Amount to increase size of array if non-periodic
 
-    if periodic:
-        tran_cells = mesh_cells
-        tran_size = map_size
-    else:
-        tran_cells = pad_fraction*mesh_cells
-        tran_size = pad_fraction*map_size
+    # Calculate transformed parameters if non periodic
+    _mesh_cells = mesh_cells if periodic else pad_fraction*mesh_cells
+    _map_size = map_size if periodic else pad_fraction*map_size
 
-    cfield = np.zeros((tran_cells, tran_cells), dtype=complex)
-
-    mesh_size = tran_size/tran_cells
-
-    cfield = np.zeros((tran_cells, tran_cells), dtype=complex)
+    # Arrays
+    cfield = np.zeros((_mesh_cells, _mesh_cells), dtype=complex)
+    mesh_size = _map_size/_mesh_cells  # Physical size of mesh cells
 
     # Look-up arrays for the wavenumbers
     # 2pi needed to convert frequency to angular frequency
-    kx = np.fft.fftfreq(tran_cells, d=mesh_size)*2.*np.pi
-    ky = kx  # The k in the y direction are identical to those in the x direction
+    kx = np.fft.fftfreq(_mesh_cells, d=mesh_size)*2.*np.pi
+    ky = kx  # k in the y direction are identical to those in the x direction
 
     # Fill the map in Fourier space
-    # TODO: Loops in python are bad. Is there a clever way of doing this?
-    for i in range(tran_cells):
-        for j in range(tran_cells):
-
-            # Absolute wavenumber corresponding to cell in FFT array
-            k = np.sqrt(kx[i]**2+ky[j]**2)
-
-            if (i == 0 and j == 0):
-                cfield[i, j] = mean_value
-                # cfield[i, j] = 0.
-            else:
-                sigma = np.sqrt(power_spectrum(k, *args))/tran_size
-                (x, y) = np.random.normal(0., sigma, size=2)
-                cfield[i, j] = complex(x, y)
+    k_grid = np.sqrt(kx**2+ky[:, None]**2)
+    k_grid[0, 0] = 1e-10  # Avoid division by zero
+    sigma_grid = np.sqrt(power_spectrum(k_grid))/_map_size
+    x, y = np.random.normal(0., sigma_grid, size=(2, _mesh_cells, _mesh_cells))
+    cfield = x + 1j*y
+    cfield[0, 0] = mean_value
 
     # FFT
     cfield = np.fft.ifft2(cfield)
-    cfield = cfield*tran_cells**2  # Normalisation
+    cfield = cfield*_mesh_cells**2  # Normalisation
 
     # Convert to real
-    field = np.zeros((mesh_cells, mesh_cells))
-    # For non-periodic arrays we discard some
+    # For non-periodic arrays we discard some of the array in each direction
     field = np.real(cfield[0:mesh_cells, 0:mesh_cells])
-    # field = field+mean
-
     return field
 
 # Return a list of the integer coordinates of all local maxima in a 2D field
